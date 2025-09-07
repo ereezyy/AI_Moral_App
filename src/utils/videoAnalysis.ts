@@ -1,38 +1,40 @@
 import * as tf from '@tensorflow/tfjs';
-import * as blazeface from '@tensorflow-models/blazeface';
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import { VideoAnalysis, EmotionalState } from '../types/analysis';
 
-let faceModel: blazeface.BlazeFaceModel | null = null;
-let landmarkModel: any | null = null;
-
-export async function initializeVideoAnalysis() {
+export async function initializeVideoAnalysis(): Promise<faceLandmarksDetection.FaceLandmarksDetector> {
   try {
-    faceModel = await blazeface.load();
-    landmarkModel = await faceLandmarksDetection.load(
-      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
-    );
-    return true;
+    const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
+    const detectorConfig: faceLandmarksDetection.DetectorConfig = {
+      runtime: 'tfjs',
+      maxFaces: 1,
+      refineLandmarks: true,
+    };
+    
+    const detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
+    console.log('Face landmarks detector initialized successfully');
+    return detector;
   } catch (error) {
     console.error('Failed to initialize video analysis:', error);
-    return false;
+    throw error;
   }
 }
 
 export async function analyzeVideoFrame(
-  videoElement: HTMLVideoElement
+  videoElement: HTMLVideoElement,
+  detector: faceLandmarksDetection.FaceLandmarksDetector
 ): Promise<VideoAnalysis | null> {
-  if (!faceModel || !landmarkModel) return null;
+  if (!detector) return null;
 
-  const faces = await faceModel.estimateFaces(videoElement);
+  const estimationConfig: faceLandmarksDetection.EstimationConfig = {
+    flipHorizontal: false,
+  };
+  
+  const faces = await detector.estimateFaces(videoElement, estimationConfig);
   if (faces.length === 0) return null;
 
-  const landmarks = await landmarkModel.estimateFaces({
-    input: videoElement,
-  });
-
-  const emotionalState = await analyzeEmotionalState(landmarks[0]);
-  const attentiveness = calculateAttentiveness(landmarks[0]);
+  const emotionalState = await analyzeEmotionalState(faces[0]);
+  const attentiveness = calculateAttentiveness(faces[0]);
   const context = analyzeEnvironmentalContext(videoElement);
 
   return {

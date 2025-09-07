@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Camera, AlertCircle } from 'lucide-react';
 import { VideoAnalysis } from '../types/analysis';
 import { initializeVideoAnalysis, analyzeVideoFrame } from '../utils/videoAnalysis';
+import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
 export function VideoAnalyzer({ 
   onAnalysis 
@@ -11,6 +12,7 @@ export function VideoAnalyzer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detector, setDetector] = useState<faceLandmarksDetection.FaceLandmarksDetector | null>(null);
 
   useEffect(() => {
     async function setupVideo() {
@@ -20,7 +22,8 @@ export function VideoAnalyzer({
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await initializeVideoAnalysis();
+          const initializedDetector = await initializeVideoAnalysis();
+          setDetector(initializedDetector);
           setIsAnalyzing(true);
         }
       } catch (err) {
@@ -39,17 +42,17 @@ export function VideoAnalyzer({
   }, []);
 
   useEffect(() => {
-    if (!isAnalyzing || !videoRef.current) return;
+    if (!isAnalyzing || !videoRef.current || !detector) return;
 
     const analyzeInterval = setInterval(async () => {
-      const analysis = await analyzeVideoFrame(videoRef.current!);
+      const analysis = await analyzeVideoFrame(videoRef.current!, detector);
       if (analysis) {
         onAnalysis(analysis);
       }
     }, 1000);
 
     return () => clearInterval(analyzeInterval);
-  }, [isAnalyzing, onAnalysis]);
+  }, [isAnalyzing, onAnalysis, detector]);
 
   return (
     <div className="relative">
