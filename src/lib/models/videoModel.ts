@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import * as blazeface from '@tensorflow-models/blazeface';
-import { load, SupportedModels } from '@tensorflow-models/face-landmarks-detection';
+import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import type { VideoAnalysis } from '@/types/analysis';
 
 class VideoModel {
@@ -20,8 +20,8 @@ class VideoModel {
   async initialize(): Promise<boolean> {
     try {
       this.faceModel = await blazeface.load();
-      this.landmarkModel = await load(
-        SupportedModels.MediaPipeFaceMesh
+      this.landmarkModel = await faceLandmarksDetection.load(
+        faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
       );
       return true;
     } catch (error) {
