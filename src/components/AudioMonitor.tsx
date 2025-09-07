@@ -1,15 +1,20 @@
 import React from 'react';
 import { Mic, MicOff, Volume2, AlertCircle } from 'lucide-react';
 import { useAudioMonitoring } from '../hooks/useAudioMonitoring';
+import type { AudioAnalysis } from '../types/analysis';
 
-export function AudioMonitor() {
+interface AudioMonitorProps {
+  onAnalysis?: (analysis: AudioAnalysis) => void;
+}
+
+export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
   const { 
     isMonitoring, 
     error, 
     currentAnalysis,
     startMonitoring, 
     stopMonitoring 
-  } = useAudioMonitoring();
+  } = useAudioMonitoring(onAnalysis);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -57,7 +62,7 @@ export function AudioMonitor() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-gray-50 rounded-md">
+            <div className="p-3 bg-indigo-50 rounded-md">
               <span className="text-sm text-gray-600">Clarity</span>
               <div className="text-lg font-semibold">
                 {(currentAnalysis.clarity * 100).toFixed(0)}%
@@ -71,7 +76,7 @@ export function AudioMonitor() {
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 rounded-md">
+          <div className="p-4 bg-purple-50 rounded-md border border-purple-100">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Emotional Tone</h3>
             <div className="grid grid-cols-3 gap-2">
               {Object.entries(currentAnalysis.emotionalTone).map(([emotion, value]) => (
