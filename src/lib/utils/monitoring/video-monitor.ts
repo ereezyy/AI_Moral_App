@@ -4,7 +4,7 @@ import { Profiler } from '../performance';
 import { APP_CONFIG } from '../../config';
 import * as tf from '@tensorflow/tfjs';
 import * as blazeface from '@tensorflow-models/blazeface';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
+import { load as loadFaceLandmarksDetectionModel, SupportedModels } from '@tensorflow-models/face-landmarks-detection';
 
 export class VideoMonitor {
   private faceModel: blazeface.BlazeFaceModel | null = null;
@@ -15,8 +15,8 @@ export class VideoMonitor {
     return await Profiler.profileAsync('video-init', async () => {
       try {
         this.faceModel = await blazeface.load();
-        this.landmarkModel = await faceLandmarksDetection.load(
-          faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
+        this.landmarkModel = await loadFaceLandmarksDetectionModel(
+          SupportedModels.MediaPipeFaceMesh
         );
         return true;
       } catch (error) {
