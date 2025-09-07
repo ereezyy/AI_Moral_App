@@ -112,7 +112,6 @@ export function Dashboard() {
             }}
             onSubmit={handleSituationSubmit}
             isProcessing={isProcessing}
-            isProcessing={isProcessing}
           />
 
           {moralAnalysis && (
