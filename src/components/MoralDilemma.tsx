@@ -7,7 +7,7 @@ type Dilemma = {
   considerations: string[];
 };
 
-export function MoralDilemma({ dilemma, onSubmit }: { 
+export function MoralDilemma({ dilemma, onSubmit, isProcessing }: { 
   dilemma: Dilemma;
   onSubmit: (response: string) => void;
   isProcessing?: boolean;
