@@ -10,6 +10,7 @@ import { AudioMonitor } from './AudioMonitor';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { RealtimeAlerts } from './RealtimeAlerts';
 import { VideoAnalysis, MoralAnalysis } from '../types/analysis';
+import { aiService } from '../lib/services/aiService';
 
 export function Dashboard() {
   const { activities, stats, dailyGoals } = useStore();
@@ -27,36 +28,26 @@ export function Dashboard() {
     setUserInput(response);
     
     try {
-      // Simulate moral analysis with realistic data
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get real AI-powered moral analysis
+      const aiResponse = await aiService.analyzeMoralSituation({
+        situation: response,
+        context: {
+          emotional: videoAnalysis?.facialExpression || {
+            joy: 0.5, sadness: 0.2, anger: 0.1, fear: 0.1, surprise: 0.1, neutral: 0.3
+          },
+          environmental: videoAnalysis?.environmentalContext || ['indoor', 'private'],
+          social: {
+            numberOfPeople: 1,
+            relationshipTypes: ['self'],
+            socialPressure: 0.3
+          }
+        }
+      });
       
-      const analysis: MoralAnalysis = {
-        ethicalAlignment: Math.random() * 0.3 + 0.7, // 70-100%
-        conflictingValues: response.toLowerCase().includes('difficult') 
-          ? ['individual_autonomy_vs_social_harmony', 'immediate_vs_long_term_consequences']
-          : ['emotional_reaction_vs_rational_judgment'],
-        potentialConsequences: {
-          shortTerm: ['immediate_social_dynamics', 'emotional_responses'],
-          longTerm: ['relationship_development', 'personal_growth']
-        },
-        recommendedActions: [
-          'Consider the impact on all stakeholders',
-          'Evaluate long-term consequences',
-          'Maintain transparency in decision-making',
-          'Seek additional perspectives if needed'
-        ],
-        moralPrinciples: [
-          { principle: 'autonomy', relevance: Math.random() * 0.3 + 0.7 },
-          { principle: 'beneficence', relevance: Math.random() * 0.3 + 0.6 },
-          { principle: 'justice', relevance: Math.random() * 0.3 + 0.5 },
-          { principle: 'care', relevance: Math.random() * 0.3 + 0.8 }
-        ]
-      };
-      
-      setMoralAnalysis(analysis);
+      setMoralAnalysis(aiResponse);
     } catch (error) {
       console.error('Analysis failed:', error);
-      setError('Failed to analyze situation. Please try again.');
+      setError('AI analysis failed. Please check your API keys and try again.');
     } finally {
       setIsProcessing(false);
     }
