@@ -1,19 +1,14 @@
 import * as speechCommands from '@tensorflow-models/speech-commands';
-import * as toxicity from '@tensorflow-models/toxicity';
 import { AudioAnalysis, EmotionalState } from '../types/analysis';
 
 let audioContext: AudioContext | null = null;
 let analyzer: AnalyserNode | null = null;
 let mediaStream: MediaStream | null = null;
-let toxicityModel: any = null;
 
 export async function initializeAudioMonitoring() {
   try {
     // Initialize audio context
     audioContext = new AudioContext();
-    
-    // Initialize toxicity model
-    toxicityModel = await toxicity.load(0.7);
     
     // Request microphone access
     mediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -99,7 +94,6 @@ function calculateSentiment(dataArray: Uint8Array): number {
 }
 
 async function analyzeToxicity(): Promise<number> {
-  if (!toxicityModel) return 0;
   // Implement real toxicity analysis when speech-to-text is available
-  return Math.random();
+  return 0;
 }

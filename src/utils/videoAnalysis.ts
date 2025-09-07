@@ -10,7 +10,7 @@ export async function initializeVideoAnalysis() {
   try {
     faceModel = await blazeface.load();
     landmarkModel = await faceLandmarksDetection.load(
-      faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
     );
     return true;
   } catch (error) {

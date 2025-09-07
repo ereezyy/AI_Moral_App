@@ -21,7 +21,7 @@ class VideoModel {
     try {
       this.faceModel = await blazeface.load();
       this.landmarkModel = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+        faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
       );
       return true;
     } catch (error) {
