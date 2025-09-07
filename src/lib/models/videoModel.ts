@@ -1,12 +1,12 @@
 import * as tf from '@tensorflow/tfjs';
 import * as blazeface from '@tensorflow-models/blazeface';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
+import { load, SupportedModels } from '@tensorflow-models/face-landmarks-detection';
 import type { VideoAnalysis } from '@/types/analysis';
 
 class VideoModel {
   private static instance: VideoModel;
   private faceModel: blazeface.BlazeFaceModel | null = null;
-  private landmarkModel: faceLandmarksDetection.FaceLandmarksDetector | null = null;
+  private landmarkModel: any | null = null;
 
   private constructor() {}
 
@@ -20,8 +20,8 @@ class VideoModel {
   async initialize(): Promise<boolean> {
     try {
       this.faceModel = await blazeface.load();
-      this.landmarkModel = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
+      this.landmarkModel = await load(
+        SupportedModels.MediaPipeFaceMesh
       );
       return true;
     } catch (error) {

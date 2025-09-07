@@ -1,16 +1,16 @@
 import * as tf from '@tensorflow/tfjs';
 import * as blazeface from '@tensorflow-models/blazeface';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
+import { load, SupportedModels } from '@tensorflow-models/face-landmarks-detection';
 import { VideoAnalysis, EmotionalState } from '../types/analysis';
 
 let faceModel: blazeface.BlazeFaceModel | null = null;
-let landmarkModel: faceLandmarksDetection.FaceLandmarksDetector | null = null;
+let landmarkModel: any | null = null;
 
 export async function initializeVideoAnalysis() {
   try {
     faceModel = await blazeface.load();
-    landmarkModel = await faceLandmarksDetection.load(
-      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
+    landmarkModel = await load(
+      SupportedModels.MediaPipeFaceMesh
     );
     return true;
   } catch (error) {
