@@ -10,6 +10,7 @@ export default defineConfig({
       '@tensorflow/tfjs-core',
       '@tensorflow/tfjs-data',
       '@tensorflow/tfjs-layers',
+      '@tensorflow/tfjs-layers',
       '@tensorflow-models/speech-commands',
       '@tensorflow/tfjs-backend-webgl'
     ]
@@ -29,6 +30,9 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    commonjsOptions: {
+      include: [/node_modules\/@tensorflow\//]
+    },
     rollupOptions: {
       output: {
         manualChunks: {
