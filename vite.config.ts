@@ -23,6 +23,7 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     rollupOptions: {
+      external: ['@tensorflow/tfjs-data'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
