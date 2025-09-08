@@ -5,7 +5,14 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react', '@tensorflow/tfjs-layers', '@tensorflow/tfjs-data']
+    exclude: ['lucide-react'],
+    include: [
+      '@tensorflow/tfjs-core',
+      '@tensorflow/tfjs-data',
+      '@tensorflow/tfjs-layers',
+      '@tensorflow-models/speech-commands',
+      '@tensorflow/tfjs-backend-webgl'
+    ]
   },
   resolve: {
     alias: {
