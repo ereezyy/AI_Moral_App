@@ -34,6 +34,7 @@ export default defineConfig({
       include: [/node_modules\/@tensorflow\//]
     },
     rollupOptions: {
+      external: ['@tensorflow/tfjs-data'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
