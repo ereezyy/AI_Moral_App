@@ -8,6 +8,49 @@ interface EnhancedMoralInsightsProps {
 }
 
 export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) {
+  const getConflictDescription = (conflict: string): string => {
+    const descriptions: Record<string, string> = {
+      individual_autonomy_vs_social_harmony: 'Balancing personal freedom with group cohesion',
+      emotional_reaction_vs_rational_judgment: 'Managing emotional responses while maintaining objectivity',
+      immediate_vs_long_term_consequences: 'Weighing short-term benefits against long-term impacts'
+    };
+    return descriptions[conflict] || 'Analyzing potential ethical conflicts';
+  };
+
+  const getConsequenceDescription = (consequence: string, type: 'short' | 'long'): string => {
+    const descriptions: Record<string, string> = {
+      immediate_social_dynamics: 'Direct impact on current relationships and social interactions',
+      potential_trust_erosion: 'Possible decrease in trust and credibility',
+      immediate_safety_concerns: 'Immediate risks to well-being and security',
+      relationship_pattern_formation: 'Development of lasting behavioral patterns',
+      professional_reputation_impact: 'Long-term effects on professional standing'
+    };
+    return descriptions[consequence] || `${type === 'short' ? 'Immediate' : 'Long-term'} impact analysis`;
+  };
+
+  const getActionDescription = (action: string): string => {
+    const descriptions: Record<string, string> = {
+      'Reassess decision considering ethical principles': 'Take time to evaluate the decision against core moral values',
+      'Take time to process emotions before acting': 'Allow emotional responses to settle before making decisions',
+      'Consider seeking external perspective': 'Gain insights from uninvolved parties for better objectivity'
+    };
+    return descriptions[action] || 'Strategic action for ethical improvement';
+  };
+
+  const getPrincipleDescription = (principle: string): string => {
+    const descriptions: Record<string, string> = {
+      autonomy: 'Respect for individual choice and self-determination',
+      beneficence: 'Active promotion of well-being and benefit',
+      non_maleficence: 'Avoiding harm to others',
+      justice: 'Fair and equitable treatment',
+      fidelity: 'Maintaining trust and keeping commitments',
+      utility: 'Maximizing overall benefit for all involved',
+      care: 'Showing concern and compassion for others',
+      virtue: 'Embodying moral excellence and character'
+    };
+    return descriptions[principle] || 'Core ethical principle';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -85,7 +128,7 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
                           ).join(' ')}
                         </div>
                         <p className="text-sm text-amber-600 mt-1">
-                          {this.getConflictDescription(value)}
+                          {getConflictDescription(value)}
                         </p>
                       </div>
                     </div>
@@ -125,7 +168,7 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
                           ).join(' ')}
                         </div>
                         <p className="text-sm text-blue-600 mt-1">
-                          {this.getConsequenceDescription(consequence, 'short')}
+                          {getConsequenceDescription(consequence, 'short')}
                         </p>
                       </div>
                     </div>
@@ -155,7 +198,7 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
                           ).join(' ')}
                         </div>
                         <p className="text-sm text-purple-600 mt-1">
-                          {this.getConsequenceDescription(consequence, 'long')}
+                          {getConsequenceDescription(consequence, 'long')}
                         </p>
                       </div>
                     </div>
@@ -188,7 +231,7 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
                   <div className="flex-1">
                     <div className="font-medium text-indigo-700">{action}</div>
                     <p className="text-sm text-indigo-600 mt-1">
-                      {this.getActionDescription(action)}
+                      {getActionDescription(action)}
                     </p>
                   </div>
                 </div>
@@ -229,7 +272,7 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  {this.getPrincipleDescription(principle)}
+                  {getPrincipleDescription(principle)}
                 </p>
               </motion.div>
             ))}
@@ -238,47 +281,4 @@ export function EnhancedMoralInsights({ analysis }: EnhancedMoralInsightsProps) 
       </div>
     </motion.div>
   );
-
-  private getConflictDescription(conflict: string): string {
-    const descriptions: Record<string, string> = {
-      individual_autonomy_vs_social_harmony: 'Balancing personal freedom with group cohesion',
-      emotional_reaction_vs_rational_judgment: 'Managing emotional responses while maintaining objectivity',
-      immediate_vs_long_term_consequences: 'Weighing short-term benefits against long-term impacts'
-    };
-    return descriptions[conflict] || 'Analyzing potential ethical conflicts';
-  }
-
-  private getConsequenceDescription(consequence: string, type: 'short' | 'long'): string {
-    const descriptions: Record<string, string> = {
-      immediate_social_dynamics: 'Direct impact on current relationships and social interactions',
-      potential_trust_erosion: 'Possible decrease in trust and credibility',
-      immediate_safety_concerns: 'Immediate risks to well-being and security',
-      relationship_pattern_formation: 'Development of lasting behavioral patterns',
-      professional_reputation_impact: 'Long-term effects on professional standing'
-    };
-    return descriptions[consequence] || `${type === 'short' ? 'Immediate' : 'Long-term'} impact analysis`;
-  }
-
-  private getActionDescription(action: string): string {
-    const descriptions: Record<string, string> = {
-      'Reassess decision considering ethical principles': 'Take time to evaluate the decision against core moral values',
-      'Take time to process emotions before acting': 'Allow emotional responses to settle before making decisions',
-      'Consider seeking external perspective': 'Gain insights from uninvolved parties for better objectivity'
-    };
-    return descriptions[action] || 'Strategic action for ethical improvement';
-  }
-
-  private getPrincipleDescription(principle: string): string {
-    const descriptions: Record<string, string> = {
-      autonomy: 'Respect for individual choice and self-determination',
-      beneficence: 'Active promotion of well-being and benefit',
-      non_maleficence: 'Avoiding harm to others',
-      justice: 'Fair and equitable treatment',
-      fidelity: 'Maintaining trust and keeping commitments',
-      utility: 'Maximizing overall benefit for all involved',
-      care: 'Showing concern and compassion for others',
-      virtue: 'Embodying moral excellence and character'
-    };
-    return descriptions[principle] || 'Core ethical principle';
-  }
 }
