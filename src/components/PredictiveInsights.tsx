@@ -1,6 +1,6 @@
-import { aiService } from './aiService';
-import { conversationService } from './conversationService';
-import { ConversationAnalyzer } from './conversationAnalyzer';
+import { aiService } from '../lib/services/aiService';
+import { conversationService } from '../lib/services/conversationService';
+import { ConversationAnalyzer } from '../lib/services/conversationAnalyzer';
 import { ErrorHandler } from '../utils/error/errorHandler';
 import { TextAnalyzer } from '../utils/textAnalysis';
 import type { VideoAnalysis, AudioAnalysis, SituationalContext } from '../types';
