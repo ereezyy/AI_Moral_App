@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { PerformanceMonitor } from '../performance';
+import { PerformanceMonitor } from '../performance-monitor';
 
 describe('Performance Utils', () => {
   it('should measure async operation duration', async () => {
