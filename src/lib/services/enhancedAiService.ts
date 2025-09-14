@@ -1,7 +1,7 @@
 import { aiService } from './aiService';
 import { conversationService } from './conversationService';
 import { ConversationAnalyzer } from './conversationAnalyzer';
-import { ErrorHandler } from '../utils/error/errorHandler';
+import { CentralizedErrorHandler } from '../utils/error/centralizedErrorHandler';
 import { TextAnalyzer } from '../utils/textAnalysis';
 import type { VideoAnalysis, AudioAnalysis, SituationalContext } from '../types';
 
@@ -17,9 +17,6 @@ interface LifePartnerResponse {
   psychologicalInsights?: string[];
   coachingInterventions?: string[];
   skillDevelopment?: string[];
-  cognitiveReframes?: string[];
-  behavioralSuggestions?: string[];
-  crisisSupport?: string[];
 }
 
 class EnhancedAIService {
@@ -40,7 +37,7 @@ class EnhancedAIService {
     audioAnalysis: AudioAnalysis | null,
     situationalContext?: Partial<SituationalContext>
   ): Promise<LifePartnerResponse> {
-    return await ErrorHandler.withErrorHandling(
+    return await CentralizedErrorHandler.handleAsync(
       async () => {
         const conversationHistory = conversationService.getConversationHistory(10);
         const conversationPatterns = ConversationAnalyzer.analyzeConversationHistory(conversationHistory);
@@ -61,37 +58,330 @@ class EnhancedAIService {
 
         return this.createLifePartnerResponse(response, userInput, videoAnalysis, userProfile);
       },
-      'Enhanced AI life context analysis',
-      this.getBasicFallbackResponse(userInput, videoAnalysis)
+      {
+        operation: 'Enhanced AI life context analysis',
+        component: 'EnhancedAIService',
+        timestamp: Date.now()
+      },
+      { fallbackValue: this.getBasicFallbackResponse(userInput, videoAnalysis) }
     ) || this.getBasicFallbackResponse(userInput, videoAnalysis);
   }
 
+  private buildEnhancedPrompt(
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null,
+    audioAnalysis: AudioAnalysis | null,
+    userProfile: any,
+    conversationPatterns: any
+  ): string {
+    const contextualPrompt = conversationService.getContextualPrompt();
+    const environmentalContext = this.buildEnvironmentalContext(videoAnalysis, audioAnalysis);
+    const behavioralAnalysis = this.buildBehavioralAnalysis(conversationPatterns, userProfile);
+    
     return `
-PERSONALITY PROFILE:
-Big Five: O:${(psychProfile.personality?.bigFive.openness * 100).toFixed(0)}% C:${(psychProfile.personality?.bigFive.conscientiousness * 100).toFixed(0)}% E:${(psychProfile.personality?.bigFive.extraversion * 100).toFixed(0)}% A:${(psychProfile.personality?.bigFive.agreeableness * 100).toFixed(0)}% N:${(psychProfile.personality?.bigFive.neuroticism * 100).toFixed(0)}%
-Strengths: ${psychProfile.personality?.strengthsProfile?.join(', ') || 'Assessing...'}
-Core Motivations: ${psychProfile.personality?.coreMotivations?.join(', ') || 'Learning about you...'}
+${contextualPrompt}
 
-ATTACHMENT STYLE: ${psychProfile.attachmentStyle?.primaryStyle || 'Analyzing...'} (Security: ${((psychProfile.attachmentStyle?.securityLevel || 0.5) * 100).toFixed(0)}%)
+CURRENT INPUT: "${userInput}"
 
-EMOTIONAL INTELLIGENCE:
-Self-awareness: ${((psychProfile.emotionalIntelligence?.selfAwareness || 0.5) * 100).toFixed(0)}%
-Self-regulation: ${((psychProfile.emotionalIntelligence?.selfRegulation || 0.5) * 100).toFixed(0)}%
-Empathy: ${((psychProfile.emotionalIntelligence?.empathy || 0.5) * 100).toFixed(0)}%
+BEHAVIORAL ANALYSIS:
+${behavioralAnalysis}
 
-COGNITIVE BIASES: ${Object.entries(psychProfile.cognitiveBiases || {}).map(([bias, level]) => `${bias}: ${((level as number) * 100).toFixed(0)}%`).join(', ')}
+ENVIRONMENTAL CONTEXT:
+${environmentalContext}
+
+Please provide a warm, insightful, and supportive response that:
+1. Acknowledges their emotional state with empathy
+2. Provides practical guidance based on the context
+3. Offers growth-oriented perspectives
+4. Includes personalized insights based on their patterns
+5. Suggests concrete next steps
+6. Maintains the tone of a caring AI life partner
+
+Be conversational, not clinical. Reference their patterns naturally. Focus on their strengths while addressing concerns compassionately.
     `;
   }
 
-  private buildCoachingContext(coachingGuidance: any): string {
-    return `
-CRISIS ASSESSMENT: ${coachingGuidance.crisisAssessment?.riskLevel || 'Low'} risk
-COACHING INTERVENTIONS NEEDED: ${coachingGuidance.coachingInterventions?.length || 0} interventions identified
-SKILL BUILDING PRIORITIES: ${coachingGuidance.skillBuilding?.map((s: any) => s.skill).join(', ') || 'General development'}
-EMOTIONAL REGULATION: ${coachingGuidance.emotionalRegulation?.regulationNeeded ? 'Required' : 'Stable'}
-COGNITIVE REFRAMING: ${coachingGuidance.cognitiveReframing?.length || 0} exercises available
-BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} experiments suggested
-    `;
+  private buildAnalysisContext(
+    videoAnalysis: VideoAnalysis | null,
+    audioAnalysis: AudioAnalysis | null,
+    situationalContext?: Partial<SituationalContext>
+  ) {
+    const context = {
+      emotional: audioAnalysis?.emotionalTone || { neutral: 0.7, joy: 0.2, sadness: 0.1, anger: 0, fear: 0, surprise: 0 },
+      environmental: videoAnalysis?.environmentalContext || ['indoor', 'moderate_lighting'],
+      social: situationalContext?.socialContext || {
+        numberOfPeople: 1,
+        relationshipTypes: ['self'],
+        socialPressure: 0.2
+      }
+    };
+
+    return context;
+  }
+
+  private createLifePartnerResponse(
+    aiResponse: any,
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null,
+    userProfile: any
+  ): LifePartnerResponse {
+    const enhancedText = this.enhanceResponseText(aiResponse.reasoning || aiResponse.text, userInput, videoAnalysis);
+    const emotion = this.determineEmotionFromContext(userInput, videoAnalysis, aiResponse);
+    const priority = this.calculatePriorityLevel(aiResponse, userInput);
+    
+    return {
+      text: enhancedText,
+      emotion,
+      priority,
+      suggestions: this.generateContextualSuggestions(userInput, videoAnalysis, userProfile),
+      followUpQuestions: this.generatePersonalizedQuestions(userProfile, userInput),
+      predictions: this.generatePredictions(userInput, videoAnalysis, userProfile),
+      growthOpportunities: this.identifyGrowthOpportunities(userInput, userProfile),
+      psychologicalInsights: this.generatePsychologicalInsights(videoAnalysis, audioAnalysis, userProfile),
+      coachingInterventions: this.identifyImmediateInterventions(userInput),
+      skillDevelopment: this.identifySkillDevelopmentOpportunities(userInput)
+    };
+  }
+
+  private enhanceResponseText(
+    baseResponse: string,
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null
+  ): string {
+    let enhancedText = baseResponse;
+
+    // Add emotional acknowledgment if video shows clear emotion
+    if (videoAnalysis) {
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
+      if (dominantEmotion !== 'neutral' && videoAnalysis.facialExpression[dominantEmotion] > 0.4) {
+        const emotionAcknowledgment = this.getEmotionAcknowledgment(dominantEmotion);
+        enhancedText = `${emotionAcknowledgment} ${enhancedText}`;
+      }
+    }
+
+    return enhancedText;
+  }
+
+  private getDominantEmotion(emotions: any): string {
+    return Object.entries(emotions)
+      .reduce((prev, current) => prev[1] > current[1] ? prev : current)[0];
+  }
+
+  private getEmotionAcknowledgment(emotion: string): string {
+    const acknowledgments = {
+      joy: "I can see you're feeling positive about this!",
+      sadness: "I sense this is weighing on you.",
+      anger: "This seems to be bringing up some strong feelings.",
+      fear: "I understand this might feel uncertain or concerning.",
+      surprise: "This seems to have caught you off guard!"
+    };
+    return acknowledgments[emotion as keyof typeof acknowledgments] || "";
+  }
+
+  private determineEmotionFromContext(
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null,
+    aiResponse: any
+  ): LifePartnerResponse['emotion'] {
+    // Check for crisis indicators first
+    const crisisWords = ['hopeless', 'can\'t go on', 'pointless', 'overwhelming'];
+    if (crisisWords.some(word => userInput.toLowerCase().includes(word))) {
+      return 'concerned';
+    }
+
+    // Check video emotion if available
+    if (videoAnalysis) {
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
+      if (dominantEmotion === 'joy' && videoAnalysis.facialExpression.joy > 0.6) return 'excited';
+      if (dominantEmotion === 'sadness' && videoAnalysis.facialExpression.sadness > 0.5) return 'concerned';
+    }
+
+    // Check AI response content
+    if (aiResponse.ethicalAlignment > 0.8) return 'encouraging';
+    if (userInput.includes('think') || userInput.includes('consider')) return 'thoughtful';
+
+    return 'supportive';
+  }
+
+  private calculatePriorityLevel(aiResponse: any, userInput: string): LifePartnerResponse['priority'] {
+    // Crisis indicators = urgent
+    const crisisWords = ['emergency', 'crisis', 'desperate', 'immediate help'];
+    if (crisisWords.some(word => userInput.toLowerCase().includes(word))) {
+      return 'urgent';
+    }
+
+    // Low ethical alignment = high priority
+    if (aiResponse.ethicalAlignment < 0.5) return 'high';
+
+    // Important keywords = high priority
+    const importantWords = ['important', 'significant', 'major', 'big decision'];
+    if (importantWords.some(word => userInput.toLowerCase().includes(word))) {
+      return 'high';
+    }
+
+    return 'medium';
+  }
+
+  private generateContextualSuggestions(
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null,
+    userProfile: any
+  ): string[] {
+    const suggestions = [];
+
+    // Video-based suggestions
+    if (videoAnalysis) {
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
+      if (dominantEmotion === 'sadness') {
+        suggestions.push("Tell me more about what's troubling you");
+      } else if (dominantEmotion === 'joy') {
+        suggestions.push("Share what's going well for you");
+      }
+    }
+
+    // Content-based suggestions
+    if (userInput.toLowerCase().includes('decision')) {
+      suggestions.push("Let's explore your options together");
+      suggestions.push("What factors are most important to you?");
+    } else if (userInput.toLowerCase().includes('relationship')) {
+      suggestions.push("Tell me about this relationship dynamic");
+      suggestions.push("How do you usually handle conflicts?");
+    } else {
+      suggestions.push("Help me understand the situation better");
+      suggestions.push("What's the most challenging part?");
+    }
+
+    return suggestions.slice(0, 3);
+  }
+
+  private generatePersonalizedQuestions(userProfile: any, userInput: string): string[] {
+    const questions = [];
+
+    // Always include emotional check-in
+    questions.push("How are you feeling about this situation?");
+
+    // Based on user input content
+    if (userInput.toLowerCase().includes('decision') || userInput.toLowerCase().includes('choice')) {
+      questions.push("What would your ideal outcome look like?");
+      questions.push("What values are most important in this decision?");
+    } else if (userInput.toLowerCase().includes('stress') || userInput.toLowerCase().includes('overwhelm')) {
+      questions.push("What typically helps you feel more balanced?");
+      questions.push("What support do you have available?");
+    } else {
+      questions.push("What patterns do you notice in similar situations?");
+      questions.push("How does this connect to your broader goals?");
+    }
+
+    return questions.slice(0, 3);
+  }
+
+  private generatePredictions(
+    userInput: string,
+    videoAnalysis: VideoAnalysis | null,
+    userProfile: any
+  ): string[] {
+    const predictions = [];
+
+    // Positive prediction based on engagement
+    if (videoAnalysis && videoAnalysis.attentiveness > 0.7) {
+      predictions.push("Your high engagement suggests you'll find clarity through discussion");
+    }
+
+    // Content-based predictions
+    if (userInput.toLowerCase().includes('goal') || userInput.toLowerCase().includes('plan')) {
+      predictions.push("Your planning mindset indicates strong follow-through potential");
+    }
+
+    // Growth-oriented prediction
+    predictions.push("This reflection process will likely lead to valuable insights");
+
+    return predictions.slice(0, 2);
+  }
+
+  private identifyGrowthOpportunities(userInput: string, userProfile: any): string[] {
+    const opportunities = [];
+
+    if (userInput.toLowerCase().includes('communication')) {
+      opportunities.push("Developing more effective communication strategies");
+    }
+    if (userInput.toLowerCase().includes('stress') || userInput.toLowerCase().includes('pressure')) {
+      opportunities.push("Building stronger stress management techniques");
+    }
+    if (userInput.toLowerCase().includes('decision')) {
+      opportunities.push("Enhancing decision-making confidence and clarity");
+    }
+
+    if (opportunities.length === 0) {
+      opportunities.push("Expanding self-awareness and emotional intelligence");
+    }
+
+    return opportunities.slice(0, 2);
+  }
+
+  private generatePsychologicalInsights(
+    videoAnalysis: VideoAnalysis | null,
+    audioAnalysis: AudioAnalysis | null,
+    userProfile: any
+  ): string[] {
+    const insights = [];
+
+    if (videoAnalysis) {
+      if (videoAnalysis.attentiveness > 0.8) {
+        insights.push("Your focused attention demonstrates strong cognitive engagement");
+      }
+      
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
+      if (dominantEmotion !== 'neutral') {
+        insights.push(`Your ${dominantEmotion} expression shows authentic emotional processing`);
+      }
+    }
+
+    if (audioAnalysis) {
+      if (audioAnalysis.clarity > 0.8) {
+        insights.push("Your clear speech patterns indicate organized thinking");
+      }
+      if (audioAnalysis.sentiment > 0.7) {
+        insights.push("Your positive vocal tone suggests resilience and optimism");
+      }
+    }
+
+    return insights.slice(0, 2);
+  }
+
+  private identifyImmediateInterventions(userInput: string): string[] {
+    const interventions = [];
+
+    if (userInput.toLowerCase().includes('overwhelmed') || userInput.toLowerCase().includes('stress')) {
+      interventions.push("Try the 4-7-8 breathing technique for immediate calm");
+    }
+    if (userInput.toLowerCase().includes('confused') || userInput.toLowerCase().includes('unclear')) {
+      interventions.push("Let's break this down into smaller, manageable parts");
+    }
+    if (userInput.toLowerCase().includes('angry') || userInput.toLowerCase().includes('frustrated')) {
+      interventions.push("Take a moment to acknowledge and validate these feelings");
+    }
+
+    return interventions.slice(0, 2);
+  }
+
+  private identifySkillDevelopmentOpportunities(userInput: string): string[] {
+    const skills = [];
+
+    if (userInput.toLowerCase().includes('communication') || userInput.toLowerCase().includes('express')) {
+      skills.push("Communication and emotional expression skills");
+    }
+    if (userInput.toLowerCase().includes('decision') || userInput.toLowerCase().includes('choice')) {
+      skills.push("Decision-making frameworks and confidence building");
+    }
+    if (userInput.toLowerCase().includes('relationship')) {
+      skills.push("Relationship dynamics and boundary setting");
+    }
+
+    if (skills.length === 0) {
+      skills.push("Emotional regulation and self-awareness");
+    }
+
+    return skills.slice(0, 2);
   }
 
   private buildEnvironmentalContext(
@@ -101,10 +391,10 @@ BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} e
     const context = [];
     
     if (videoAnalysis) {
-      const dominantEmotion = Object.entries(videoAnalysis.facialExpression)
-        .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
+      const emotionIntensity = videoAnalysis.facialExpression[dominantEmotion];
       
-      context.push(`Facial emotion: ${dominantEmotion} (${Math.round(videoAnalysis.facialExpression[dominantEmotion as keyof typeof videoAnalysis.facialExpression] * 100)}%)`);
+      context.push(`Facial emotion: ${dominantEmotion} (${Math.round(emotionIntensity * 100)}%)`);
       context.push(`Attentiveness: ${Math.round(videoAnalysis.attentiveness * 100)}%`);
       context.push(`Environment: ${videoAnalysis.environmentalContext.join(', ')}`);
     }
@@ -118,501 +408,61 @@ BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} e
     return context.length > 0 ? context.join('\n') : 'Environment data not available';
   }
 
-  private parseLifePartnerResponse(text: string): LifePartnerResponse {
-    try {
-      // Try to extract JSON from response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.text && parsed.emotion) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      // JSON parsing failed, create response from text
+  private buildBehavioralAnalysis(conversationPatterns: any, userProfile: any): string {
+    const patterns = [];
+
+    if (userProfile.primaryEmotions && userProfile.primaryEmotions.length > 0) {
+      patterns.push(`Primary emotions: ${userProfile.primaryEmotions.join(', ')}`);
     }
     
-    // Fallback: analyze text and create structured response
-    return this.createStructuredResponse(text);
-  }
-
-  private createStructuredResponse(text: string): LifePartnerResponse {
-    const lowerText = text.toLowerCase();
-    
-    // Determine emotion based on content
-    let emotion: LifePartnerResponse['emotion'] = 'supportive';
-    if (lowerText.includes('concern') || lowerText.includes('worry')) emotion = 'concerned';
-    if (lowerText.includes('excited') || lowerText.includes('amazing')) emotion = 'excited';
-    if (lowerText.includes('encourage') || lowerText.includes('you can')) emotion = 'encouraging';
-    if (lowerText.includes('think') || lowerText.includes('consider')) emotion = 'thoughtful';
-    
-    // Determine priority
-    let priority: LifePartnerResponse['priority'] = 'medium';
-    if (lowerText.includes('urgent') || lowerText.includes('important')) priority = 'high';
-    if (lowerText.includes('immediate') || lowerText.includes('now')) priority = 'urgent';
-    
-    // Extract suggestions (simple heuristic)
-    const suggestions = [];
-    const sentences = text.split(/[.!?]+/);
-    for (const sentence of sentences) {
-      if (sentence.includes('try') || sentence.includes('consider') || sentence.includes('might')) {
-        suggestions.push(sentence.trim());
-      }
+    if (userProfile.coreValues && userProfile.coreValues.length > 0) {
+      patterns.push(`Core values: ${userProfile.coreValues.join(', ')}`);
     }
     
-    return {
-      text: text.substring(0, 500), // Limit length
-      emotion,
-      priority,
-      suggestions: suggestions.slice(0, 3),
-      followUpQuestions: [
-        "How are you feeling about this approach?",
-        "What patterns do you notice in yourself?",
-        "How does this connect to your deeper values?"
-      ],
-      psychologicalInsights: [],
-      coachingInterventions: [],
-      skillDevelopment: [],
-      cognitiveReframes: [],
-      behavioralSuggestions: [],
-      crisisSupport: this.checkForCrisisNeed(text) ? ['National Crisis Line: 988', 'Crisis Text: 741741'] : undefined
-    };
+    if (userProfile.communicationStyle) {
+      patterns.push(`Communication style: ${userProfile.communicationStyle}`);
+    }
+
+    return patterns.length > 0 ? patterns.join('\n') : 'Learning about behavioral patterns...';
   }
 
-  private getAdvancedFallbackResponse(userInput: string, videoAnalysis: VideoAnalysis | null, psychProfile?: any): LifePartnerResponse {
-    const userProfile = conversationService.getUserProfile();
-    const recentMessages = conversationService.getConversationHistory(3);
-    const behavioralPatterns = this.analyzeAdvancedBehavioralPatterns(psychProfile);
+  private getBasicFallbackResponse(userInput: string, videoAnalysis: VideoAnalysis | null): LifePartnerResponse {
+    let responseText = "I'm here to support you. ";
     
-    let responseText = "I'm here for you with my full psychological understanding and support. ";
-    
+    // Add context-aware response
     if (videoAnalysis) {
-      const dominantEmotion = Object.entries(videoAnalysis.facialExpression)
-        .reduce((a, b) => a[1] > b[1] ? a : b)[0];
-      
+      const dominantEmotion = this.getDominantEmotion(videoAnalysis.facialExpression);
       if (dominantEmotion === 'sadness' && videoAnalysis.facialExpression.sadness > 0.4) {
-        responseText += "I can see you might be feeling down right now. Based on our conversations and your psychological patterns, this appears connected to your deeper emotional needs and perhaps your attachment style. This emotional response makes complete psychological sense. ";
+        responseText += "I can see you might be feeling down right now. Your feelings are completely valid, and I'm here to listen. ";
       } else if (dominantEmotion === 'joy' && videoAnalysis.facialExpression.joy > 0.6) {
-        responseText += "I love seeing you happy! Your positive energy aligns beautifully with what I know about your core motivations and values. This joy seems to emerge when you're living authentically according to your psychological makeup. ";
-      } else if (dominantEmotion === 'anger' && videoAnalysis.facialExpression.anger > 0.4) {
-        responseText += "I sense some frustration, and based on your psychological profile, this anger might be masking deeper needs - perhaps around autonomy, recognition, or justice. Let's explore what your anger is trying to tell us about your authentic needs. ";
+        responseText += "I love seeing your positive energy! It's wonderful when we can share in these brighter moments. ";
       }
     }
     
-    if (psychProfile?.personality?.strengthsProfile) {
-      responseText += `Your core strengths - ${psychProfile.personality.strengthsProfile.slice(0, 2).join(' and ')} - are really shining through in how you're approaching this. `;
-    }
-    
-    responseText += "Given what I understand about your unique psychological makeup, your attachment patterns, and your core motivations, what feels most authentically important to you right now?";
+    responseText += "What would be most helpful for you right now?";
 
-    const advancedSuggestions = [
-      "Let's explore how this connects to your attachment style and core emotional needs",
-      "I'd like to help you identify any cognitive patterns that might be influencing this situation",
-      "Based on your psychological profile, let's design some personalized coping strategies",
-      "Let's examine this through the lens of your unique strengths and growth areas",
-      "Would you like to explore some behavioral experiments that align with your personality?"
-    ];
-
-    const psychologicalQuestions = [
-      "What does your emotional experience tell you about your deeper needs right now?",
-      "How does this situation connect to your attachment patterns in relationships?",
-      "What cognitive patterns do you notice yourself falling into?",
-      "How does this align or conflict with your core values and life vision?",
-      "What would growth look like for you in this specific area?"
-    ];
-    
     return {
       text: responseText,
       emotion: 'supportive',
-      priority: 'high',
-      suggestions: advancedSuggestions.slice(0, 4),
-      followUpQuestions: psychologicalQuestions.slice(0, 3),
-      predictions: [
-        "Based on your psychological profile, you'll likely find deeper clarity after emotional processing",
-        "This situation may reveal new aspects of your authentic self you haven't fully recognized",
-        "Your attachment style suggests this growth opportunity will strengthen your sense of security"
+      priority: 'medium',
+      suggestions: [
+        "Tell me more about your situation",
+        "Share what's on your mind",
+        "Ask for specific guidance"
       ],
-      riskFactors: [
-        "Your perfectionist tendencies may increase self-criticism during this transition",
-        "Your cognitive patterns might amplify the emotional intensity of this situation"
+      followUpQuestions: [
+        "How are you feeling about this?",
+        "What's the most challenging part?",
+        "What support would be helpful?"
       ],
-      growthOpportunities: [
-        "Developing deeper emotional intelligence and self-regulation skills",
-        "Building resilience that aligns with your unique psychological strengths",
-        "Integrating this experience into your broader life narrative and identity development"
-      ],
-      psychologicalInsights: psychProfile ? [
-        `Your ${psychProfile.personality?.bigFive ? 'Big Five profile' : 'emerging personality patterns'} suggests you approach challenges with ${psychProfile.personality?.strengthsProfile?.[0] || 'thoughtfulness'}`,
-        `Your ${psychProfile.attachmentStyle?.primaryStyle || 'developing'} attachment style influences how you process relationship and security needs`,
-        `I notice your decision-making style tends toward ${psychProfile.decisionMakingStyle?.style || 'careful analysis'}, which serves you well in complex situations`
+      predictions: ["Talking through this will bring clarity and insight"],
+      growthOpportunities: ["Developing greater self-awareness through reflection"],
+      psychologicalInsights: videoAnalysis ? [
+        `Your ${this.getDominantEmotion(videoAnalysis.facialExpression)} expression shows authentic emotional processing`
       ] : [],
-      coachingInterventions: [
-        "Let's explore immediate emotional regulation techniques that match your psychological profile",
-        "I'd like to help you identify and challenge any cognitive distortions that might be active right now"
-      ],
-      skillDevelopment: [
-        "Personalized emotional regulation techniques based on your unique profile",
-        "Communication skills that align with your attachment style and personality"
-      ]
+      coachingInterventions: ["Let's explore this step by step together"],
+      skillDevelopment: ["Emotional awareness and communication skills"]
     };
-  }
-
-  // New advanced analysis methods
-  private analyzeAdvancedBehavioralPatterns(psychProfile: any) {
-    if (!psychProfile) return this.getBasicBehavioralPatterns();
-    
-    return {
-      consistency: psychProfile.personality?.bigFive?.conscientiousness || 0.5,
-      decisionMakingStyle: psychProfile.decisionMakingStyle?.style || 'analytical',
-      stressPatterns: psychProfile.stressResponse?.stressTriggers || ['uncertainty'],
-      growthAreas: psychProfile.personality?.developmentAreas || ['emotional regulation'],
-      strengths: psychProfile.personality?.strengthsProfile || ['self-awareness'],
-      emotionalRegulation: psychProfile.emotionalIntelligence?.selfRegulation || 0.5,
-      attachmentInfluence: psychProfile.attachmentStyle?.primaryStyle || 'secure',
-      cognitiveBiases: psychProfile.cognitiveBiases || {}
-    };
-  }
-
-  private analyzeAdvancedEmotionalTrends(psychProfile: any, video: VideoAnalysis | null, audio: AudioAnalysis | null) {
-    if (!video && !audio && !psychProfile) return this.getBasicEmotionalTrends();
-    
-    return {
-      dominantEmotions: this.identifyAdvancedDominantEmotions(video, audio, psychProfile),
-      emotionalStability: psychProfile?.emotionalIntelligence?.selfRegulation || 0.5,
-      stressTriggers: psychProfile?.stressResponse?.stressTriggers || ['uncertainty'],
-      positiveIndicators: this.identifyAdvancedPositiveIndicators(video, audio, psychProfile),
-      concerningPatterns: this.identifyAdvancedConcerningPatterns(video, audio, psychProfile),
-      attachmentInfluence: psychProfile?.attachmentStyle?.relationshipPatterns || [],
-      copingMechanisms: psychProfile?.stressResponse?.copingMechanisms || []
-    };
-  }
-
-  private assessAdvancedRisk(userInput: string, psychProfile: any, crisisAssessment: any) {
-    const textRisk = this.analyzeAdvancedTextRisk(userInput);
-    const psychologicalRisk = this.calculatePsychologicalRisk(psychProfile);
-    const crisisRisk = crisisAssessment?.riskLevel === 'high' || crisisAssessment?.riskLevel === 'crisis' ? 0.9 : 0.1;
-    
-    const overall = Math.max(textRisk, psychologicalRisk, crisisRisk);
-    
-    return {
-      overall,
-      categories: {
-        psychological: psychologicalRisk,
-        crisis: crisisRisk,
-        situational: textRisk,
-        attachment: psychProfile?.attachmentStyle?.securityLevel ? 1 - psychProfile.attachmentStyle.securityLevel : 0.3
-      },
-      interventions: this.suggestAdvancedInterventions(overall, psychProfile, crisisAssessment),
-      protectiveFactors: this.identifyProtectiveFactors(psychProfile)
-    };
-  }
-
-  private generateAdvancedPredictiveInsights(psychProfile: any, coachingGuidance: any) {
-    return {
-      likelyOutcomes: this.predictPsychologicalOutcomes(psychProfile),
-      potentialChallenges: this.predictPsychologicalChallenges(psychProfile),
-      opportunitiesForGrowth: this.identifyPsychologicalGrowthOpportunities(psychProfile),
-      recommendedPreparation: this.suggestPsychologicalPreparation(psychProfile),
-      skillDevelopment: coachingGuidance?.skillBuilding || [],
-      interventionOpportunities: coachingGuidance?.coachingInterventions || [],
-      personalityAlignment: this.assessPersonalityAlignment(psychProfile)
-    };
-  }
-
-  async speakResponse(response: LifePartnerResponse): Promise<void> {
-    const voiceOptions = {
-      rate: response.emotion === 'excited' ? 1.1 : 0.9,
-      pitch: response.emotion === 'supportive' ? 1.0 : 1.1,
-      volume: response.priority === 'urgent' ? 1.0 : 0.9
-    };
-    
-    await speechService.speak(response.text, voiceOptions);
-  }
-
-  private buildAdvancedBehavioralAnalysis(patterns: any, trends: any, risk: any, predictions: any): string {
-    if (!patterns && !trends) return 'Advanced analysis not available';
-    
-    return `
-BEHAVIORAL PATTERNS ANALYSIS:
-Decision-making: ${patterns?.decisionMakingStyle || 'Analytical'} (Confidence: ${((patterns?.consistency || 0.5) * 100).toFixed(0)}%)
-Stress response: ${patterns?.stressPatterns?.join(', ') || 'Under evaluation'}
-Emotional regulation: ${((patterns?.emotionalRegulation || 0.5) * 100).toFixed(0)}% proficiency
-Attachment influence: ${patterns?.attachmentInfluence || 'Secure'} attachment patterns
-Cognitive biases: ${Object.keys(patterns?.cognitiveBiases || {}).slice(0, 3).join(', ')}
-
-EMOTIONAL TRENDS:
-Stability: ${((trends?.emotionalStability || 0.5) * 100).toFixed(0)}%
-Dominant emotions: ${trends?.dominantEmotions || 'Monitoring...'}
-Coping mechanisms: ${trends?.copingMechanisms?.slice(0, 2).join(', ') || 'Developing repertoire'}
-
-RISK & PREDICTION ANALYSIS:
-Overall risk: ${((risk?.overall || 0.3) * 100).toFixed(0)}%
-Growth trajectory: ${predictions?.personalityAlignment || 'Positive development'}
-Skill development opportunities: ${predictions?.skillDevelopment?.length || 0} identified
-Intervention priorities: ${predictions?.interventionOpportunities?.length || 0} immediate opportunities
-    `;
-  }
-
-  // Helper methods for advanced analysis
-  private getBasicBehavioralPatterns() {
-    return {
-      consistency: 0.5,
-      decisionMakingStyle: 'analytical',
-      stressPatterns: ['uncertainty'],
-      growthAreas: ['emotional regulation'],
-      strengths: ['self-awareness'],
-      emotionalRegulation: 0.5
-    };
-  }
-
-  private getBasicEmotionalTrends() {
-    return {
-      dominantEmotions: 'neutral',
-      emotionalStability: 0.5,
-      stressTriggers: ['change'],
-      positiveIndicators: ['growth mindset'],
-      concerningPatterns: []
-    };
-  }
-
-  private identifyAdvancedDominantEmotions(video: VideoAnalysis | null, audio: AudioAnalysis | null, psychProfile: any): string {
-    if (video) {
-      const emotions = Object.entries(video.facialExpression);
-      const dominant = emotions.reduce((a, b) => a[1] > b[1] ? a : b);
-      return dominant[0];
-    }
-    return psychProfile?.emotionalIntelligence?.dominantPattern || 'neutral';
-  }
-
-  private identifyAdvancedPositiveIndicators(video: VideoAnalysis | null, audio: AudioAnalysis | null, psychProfile: any): string[] {
-    const indicators = [];
-    if (psychProfile?.personality?.strengthsProfile) {
-      indicators.push(...psychProfile.personality.strengthsProfile);
-    }
-    if (psychProfile?.emotionalIntelligence?.selfAwareness > 0.7) {
-      indicators.push('High self-awareness');
-    }
-    if (video?.attentiveness > 0.7) {
-      indicators.push('Strong engagement');
-    }
-    return indicators.length > 0 ? indicators : ['Growth mindset', 'Emotional awareness'];
-  }
-
-  private identifyAdvancedConcerningPatterns(video: VideoAnalysis | null, audio: AudioAnalysis | null, psychProfile: any): string[] {
-    const concerns = [];
-    if (psychProfile?.cognitiveBiases?.catastrophicThinking > 0.7) {
-      concerns.push('High catastrophic thinking');
-    }
-    if (psychProfile?.stressResponse?.burnoutRisk > 0.6) {
-      concerns.push('Burnout risk');
-    }
-    if (psychProfile?.attachmentStyle?.securityLevel < 0.4) {
-      concerns.push('Attachment insecurity');
-    }
-    return concerns;
-  }
-
-  private analyzeAdvancedTextRisk(userInput: string): number {
-    const riskWords = ['hopeless', 'pointless', 'can\'t go on', 'worthless', 'overwhelming'];
-    const matches = riskWords.filter(word => userInput.toLowerCase().includes(word));
-    return Math.min(matches.length / 3, 1);
-  }
-
-  private calculatePsychologicalRisk(psychProfile: any): number {
-    if (!psychProfile) return 0.3;
-    
-    let risk = 0;
-    risk += psychProfile.personality?.bigFive?.neuroticism * 0.3 || 0;
-    risk += psychProfile.stressResponse?.burnoutRisk * 0.3 || 0;
-    risk += (1 - (psychProfile.attachmentStyle?.securityLevel || 0.5)) * 0.2;
-    risk += (1 - (psychProfile.emotionalIntelligence?.selfRegulation || 0.5)) * 0.2;
-    
-    return Math.min(risk, 1);
-  }
-
-  private suggestAdvancedInterventions(overallRisk: number, psychProfile: any, crisisAssessment: any): string[] {
-    const interventions = [];
-    
-    if (overallRisk > 0.8) {
-      interventions.push('Immediate crisis intervention protocols');
-      interventions.push('Professional mental health support');
-    } else if (overallRisk > 0.6) {
-      interventions.push('Enhanced emotional regulation techniques');
-      interventions.push('Cognitive behavioral interventions');
-    }
-    
-    if (psychProfile?.attachmentStyle?.securityLevel < 0.5) {
-      interventions.push('Attachment-based therapeutic work');
-    }
-    
-    if (psychProfile?.cognitiveBiases?.catastrophicThinking > 0.6) {
-      interventions.push('Cognitive restructuring exercises');
-    }
-    
-    return interventions;
-  }
-
-  private identifyProtectiveFactors(psychProfile: any): string[] {
-    const factors = [];
-    if (psychProfile?.emotionalIntelligence?.selfAwareness > 0.7) {
-      factors.push('High self-awareness');
-    }
-    if (psychProfile?.personality?.strengthsProfile?.length > 0) {
-      factors.push('Identified personal strengths');
-    }
-    if (psychProfile?.stressResponse?.resilienceFactors?.length > 0) {
-      factors.push(...psychProfile.stressResponse.resilienceFactors);
-    }
-    return factors.length > 0 ? factors : ['Growth mindset', 'Help-seeking behavior'];
-  }
-
-  private predictPsychologicalOutcomes(psychProfile: any): string[] {
-    const outcomes = [];
-    if (psychProfile?.personality?.bigFive?.conscientiousness > 0.7) {
-      outcomes.push('Strong follow-through on commitments');
-    }
-    if (psychProfile?.emotionalIntelligence?.selfAwareness > 0.6) {
-      outcomes.push('Continued emotional growth');
-    }
-    if (psychProfile?.attachmentStyle?.primaryStyle === 'secure') {
-      outcomes.push('Healthy relationship development');
-    }
-    return outcomes.length > 0 ? outcomes : ['Personal development', 'Increased self-understanding'];
-  }
-
-  private predictPsychologicalChallenges(psychProfile: any): string[] {
-    const challenges = [];
-    if (psychProfile?.cognitiveBiases?.perfectionism > 0.6) {
-      challenges.push('Perfectionism may slow decision-making');
-    }
-    if (psychProfile?.stressResponse?.primaryResponse === 'freeze') {
-      challenges.push('May struggle with action under pressure');
-    }
-    if (psychProfile?.personality?.bigFive?.neuroticism > 0.6) {
-      challenges.push('Emotional intensity may require management');
-    }
-    return challenges.length > 0 ? challenges : ['Normal adjustment challenges'];
-  }
-
-  private identifyPsychologicalGrowthOpportunities(psychProfile: any): string[] {
-    const opportunities = [];
-    if (psychProfile?.emotionalIntelligence?.socialSkills < 0.6) {
-      opportunities.push('Communication skills development');
-    }
-    if (psychProfile?.decisionMakingStyle?.confidence < 0.7) {
-      opportunities.push('Decision-making confidence building');
-    }
-    if (psychProfile?.personality?.bigFive?.openness > 0.7) {
-      opportunities.push('Creative expression and exploration');
-    }
-    return opportunities.length > 0 ? opportunities : ['Self-awareness expansion', 'Resilience building'];
-  }
-
-  private suggestPsychologicalPreparation(psychProfile: any): string[] {
-    const preparations = [];
-    if (psychProfile?.stressResponse?.copingMechanisms) {
-      preparations.push('Strengthen existing coping strategies');
-    }
-    if (psychProfile?.personality?.strengthsProfile) {
-      preparations.push('Leverage identified strengths');
-    }
-    preparations.push('Build support network');
-    preparations.push('Develop emotional regulation skills');
-    return preparations;
-  }
-
-  private assessPersonalityAlignment(psychProfile: any): string {
-    if (!psychProfile) return 'Developing understanding';
-    return 'Strong alignment with authentic self';
-  }
-
-  private identifyImmediateInterventions(text: string, psychProfile?: any): string[] {
-    const interventions = [];
-    if (text.toLowerCase().includes('overwhelmed')) {
-      interventions.push('Grounding techniques for immediate relief');
-    }
-    if (text.toLowerCase().includes('anxious')) {
-      interventions.push('Anxiety management strategies');
-    }
-    return interventions;
-  }
-
-  private identifySkillDevelopmentOpportunities(text: string, psychProfile?: any): string[] {
-    return ['Emotional regulation', 'Communication skills', 'Decision-making framework'];
-  }
-
-  private generateBasicReframes(text: string): string[] {
-    if (text.toLowerCase().includes('always') || text.toLowerCase().includes('never')) {
-      return ['Challenge absolute thinking with specific examples'];
-    }
-    return [];
-  }
-
-  private generateBasicBehavioralSuggestions(text: string): string[] {
-    return ['Practice mindful awareness', 'Engage in values-based action'];
-  }
-
-  private checkForCrisisNeed(text: string): boolean {
-    const crisisIndicators = ['hopeless', 'pointless', 'end it all', 'can\'t go on'];
-    return crisisIndicators.some(indicator => text.toLowerCase().includes(indicator));
-  }
-  private buildRiskAndPredictionAnalysis(risk: any, predictions: any): string {
-    return `
-Current risk level: ${risk.overall > 0.7 ? 'HIGH' : risk.overall > 0.4 ? 'MODERATE' : 'LOW'}
-Risk categories: Emotional (${risk.categories.emotional}), Behavioral (${risk.categories.behavioral})
-Predicted outcomes: ${predictions.likelyOutcomes?.join(', ') || 'Positive growth trajectory'}
-Potential challenges: ${predictions.potentialChallenges?.join(', ') || 'Normal adjustment period'}
-Growth opportunities: ${predictions.opportunitiesForGrowth?.join(', ') || 'Enhanced self-awareness'}
-    `;
-  }
-
-  private buildDeepContextAnalysis(input: string, video: VideoAnalysis | null, audio: AudioAnalysis | null, profile: any): string {
-    const microExpressions = video ? this.analyzeMicroExpressions(video) : 'Not available';
-    const vocalCues = audio ? this.analyzeVocalCues(audio) : 'Not available';
-    const cognitiveLoad = this.assessCognitiveLoad(input, video, audio);
-    const motivationalFactors = this.identifyMotivationalFactors(input, profile);
-    
-    return `
-Micro-expressions: ${microExpressions}
-Vocal stress indicators: ${vocalCues}
-Cognitive load: ${cognitiveLoad}
-Underlying motivations: ${motivationalFactors}
-Decision confidence level: ${this.assessDecisionConfidence(input, video, audio)}
-    `;
-  }
-
-  // Helper methods for analysis
-  private calculateConsistencyScore(history: any[]): number {
-    return Math.random() * 0.3 + 0.7; // Placeholder - implement actual calculation
-  }
-
-  private identifyDecisionMakingStyle(history: any[]): string {
-    const styles = ['Analytical', 'Intuitive', 'Collaborative', 'Quick-decisive'];
-    return styles[Math.floor(Math.random() * styles.length)];
-  }
-
-  private analyzeMicroExpressions(video: VideoAnalysis): string {
-    return 'Analyzing subtle facial cues for deeper emotional understanding';
-  }
-
-  private analyzeVocalCues(audio: AudioAnalysis): string {
-    return `Stress level: ${audio.volume > 0.7 ? 'Elevated' : 'Normal'}, Clarity: ${audio.clarity > 0.8 ? 'High' : 'Variable'}`;
-  }
-
-  private assessCognitiveLoad(input: string, video: VideoAnalysis | null, audio: AudioAnalysis | null): string {
-    const wordComplexity = input.split(' ').length > 20 ? 'High' : 'Moderate';
-    return `${wordComplexity} - processing complex thoughts`;
-  }
-
-  private identifyMotivationalFactors(input: string, profile: any): string {
-    const motivations = ['Achievement', 'Connection', 'Growth', 'Security', 'Autonomy'];
-    return motivations[Math.floor(Math.random() * motivations.length)];
-  }
-
-  private assessDecisionConfidence(input: string, video: VideoAnalysis | null, audio: AudioAnalysis | null): string {
-    const uncertainWords = ['maybe', 'not sure', 'confused', 'don\'t know'];
-    const hasUncertainty = uncertainWords.some(word => input.toLowerCase().includes(word));
-    return hasUncertainty ? 'Low - needs support' : 'Moderate - developing';
   }
 }
 
