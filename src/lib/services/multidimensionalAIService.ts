@@ -365,7 +365,7 @@ Respond in JSON format:
         dailyPractices: [
           `${holisticProfile.spiritualDevelopment.spiritualPractices.current[0] || 'Meditation'} for ${Math.round(20 + (holisticProfile.consciousness.awarenessLevel * 20))} minutes daily`,
           'Consciousness tracking through journaling and reflection',
-          'Energy management through ${holisticGuidance.energeticPractices[0] || 'breathwork and movement'}'
+          'Energy management through ${holisticGuidance.energeticPractices[0] || \'breathwork and movement'}'
         ],
         lifeChanges: [
           `Align work with your ${Math.round(holisticProfile.soulAlignment.purposeAlignment * 100)}% purpose clarity`,
