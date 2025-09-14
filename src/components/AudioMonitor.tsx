@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mic, MicOff, Volume2, AlertCircle } from 'lucide-react';
-import { useAudioMonitoring } from '../hooks/useAudioMonitoring';
+import { useAudioMonitoring } from '../lib/hooks/useAudioMonitoring';
 import type { AudioAnalysis } from '../types/analysis';
 
 interface AudioMonitorProps {
