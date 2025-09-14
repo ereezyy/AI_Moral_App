@@ -40,12 +40,3 @@ function App() {
 }
 
 export default App;
-
-          </div>
-        </footer>
-      </div>
-    </ErrorBoundaryProvider>
-  );
-}
-
-export default App;
