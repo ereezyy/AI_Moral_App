@@ -1,3 +1,227 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CSS Variables for Dark Mode */
+:root {
+  /* Light theme colors */
+  --color-background: 255 255 255;
+  --color-foreground: 15 23 42;
+  --color-primary: 99 102 241;
+  --color-primary-foreground: 255 255 255;
+  --color-secondary: 241 245 249;
+  --color-secondary-foreground: 15 23 42;
+  --color-muted: 248 250 252;
+  --color-muted-foreground: 100 116 139;
+  --color-accent: 241 245 249;
+  --color-accent-foreground: 15 23 42;
+  --color-destructive: 239 68 68;
+  --color-destructive-foreground: 255 255 255;
+  --color-border: 226 232 240;
+  --color-input: 226 232 240;
+  --color-ring: 99 102 241;
+  --color-success: 34 197 94;
+  --color-warning: 245 158 11;
+  --color-error: 239 68 68;
+  --color-info: 59 130 246;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Dark theme colors */
+[data-theme="dark"] {
+  --color-background: 15 23 42;
+  --color-foreground: 248 250 252;
+  --color-primary: 129 140 248;
+  --color-primary-foreground: 15 23 42;
+  --color-secondary: 30 41 59;
+  --color-secondary-foreground: 248 250 252;
+  --color-muted: 30 41 59;
+  --color-muted-foreground: 148 163 184;
+  --color-accent: 30 41 59;
+  --color-accent-foreground: 248 250 252;
+  --color-destructive: 248 113 113;
+  --color-destructive-foreground: 15 23 42;
+  --color-border: 51 65 85;
+  --color-input: 51 65 85;
+  --color-ring: 129 140 248;
+  --color-success: 74 222 128;
+  --color-warning: 251 191 36;
+  --color-error: 248 113 113;
+  --color-info: 96 165 250;
+  
+  /* Dark shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    fill 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base styles using CSS variables */
+body {
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme-aware utility classes */
+.bg-background {
+  background-color: rgb(var(--color-background));
+}
+
+.bg-foreground {
+  background-color: rgb(var(--color-foreground));
+}
+
+.bg-primary {
+  background-color: rgb(var(--color-primary));
+}
+
+.bg-secondary {
+  background-color: rgb(var(--color-secondary));
+}
+
+.bg-muted {
+  background-color: rgb(var(--color-muted));
+}
+
+.bg-accent {
+  background-color: rgb(var(--color-accent));
+}
+
+.text-foreground {
+  color: rgb(var(--color-foreground));
+}
+
+.text-primary {
+  color: rgb(var(--color-primary));
+}
+
+.text-secondary {
+  color: rgb(var(--color-secondary-foreground));
+}
+
+.text-muted {
+  color: rgb(var(--color-muted-foreground));
+}
+
+.border-border {
+  border-color: rgb(var(--color-border));
+}
+
+.border-input {
+  border-color: rgb(var(--color-input));
+}
+
+/* Enhanced contrast for accessibility */
+.text-high-contrast {
+  color: rgb(var(--color-foreground));
+  font-weight: 500;
+}
+
+.bg-high-contrast {
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+
+/* Status colors with proper contrast */
+.text-success {
+  color: rgb(var(--color-success));
+}
+
+.text-warning {
+  color: rgb(var(--color-warning));
+}
+
+.text-error {
+  color: rgb(var(--color-error));
+}
+
+.text-info {
+  color: rgb(var(--color-info));
+}
+
+.bg-success {
+  background-color: rgb(var(--color-success) / 0.1);
+  color: rgb(var(--color-success));
+}
+
+.bg-warning {
+  background-color: rgb(var(--color-warning) / 0.1);
+  color: rgb(var(--color-warning));
+}
+
+.bg-error {
+  background-color: rgb(var(--color-error) / 0.1);
+  color: rgb(var(--color-error));
+}
+
+.bg-info {
+  background-color: rgb(var(--color-info) / 0.1);
+  color: rgb(var(--color-info));
+}
+
+/* Custom shadows using CSS variables */
+.shadow-theme-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.shadow-theme {
+  box-shadow: var(--shadow);
+}
+
+.shadow-theme-md {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-theme-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.shadow-theme-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Focus ring using theme colors */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+  focus-ring-color: rgb(var(--color-ring));
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: 0 0 0;
+    --color-foreground: 0 0 0;
+  }
+  
+  [data-theme="dark"] {
+    --color-border: 255 255 255;
+    --color-foreground: 255 255 255;
+  }
+}
