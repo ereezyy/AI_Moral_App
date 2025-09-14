@@ -6,7 +6,8 @@ import { LifePartnerInterface } from './LifePartnerInterface';
 import { VideoAnalyzer } from './VideoAnalyzer';
 import { AudioMonitor } from './AudioMonitor';
 import { PerformanceMetrics } from './PerformanceMetrics';
-import { RealtimeAlerts } from './RealtimeAlerts';
+import { EnhancedRealtimeAlerts } from './EnhancedRealtimeAlerts';
+import { PredictiveInsights } from './PredictiveInsights';
 import { VideoAnalysis, AudioAnalysis } from '../types/analysis';
 
 export function Dashboard() {
@@ -67,7 +68,11 @@ export function Dashboard() {
           />
 
           <PerformanceMetrics stats={stats} />
-          <RealtimeAlerts />
+          <EnhancedRealtimeAlerts />
+          <PredictiveInsights 
+            videoAnalysis={videoAnalysis}
+            audioAnalysis={audioAnalysis}
+          />
         </div>
       </div>
     </div>

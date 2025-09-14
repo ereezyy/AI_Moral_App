@@ -14,6 +14,9 @@ interface Message {
   emotion?: string;
   suggestions?: string[];
   followUpQuestions?: string[];
+  predictions?: string[];
+  riskFactors?: string[];
+  growthOpportunities?: string[];
 }
 
 interface LifePartnerInterfaceProps {
@@ -105,7 +108,10 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
         timestamp: Date.now(),
         emotion: response.emotion,
         suggestions: response.suggestions,
-        followUpQuestions: response.followUpQuestions
+        followUpQuestions: response.followUpQuestions,
+        predictions: response.predictions,
+        riskFactors: response.riskFactors,
+        growthOpportunities: response.growthOpportunities
       };
       
       setMessages(prev => [...prev, assistantMessage]);
@@ -292,6 +298,51 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                       >
                         ❓ {question}
                       </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Predictions */}
+                {message.type === 'assistant' && message.predictions && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-gray-600 mb-1">🔮 Predictions</div>
+                    {message.predictions.slice(0, 2).map((prediction, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border-l-2 border-blue-300"
+                      >
+                        {prediction}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Risk Factors */}
+                {message.type === 'assistant' && message.riskFactors && message.riskFactors.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-orange-600 mb-1">⚠️ Things to Watch</div>
+                    {message.riskFactors.slice(0, 2).map((risk, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded border-l-2 border-orange-300"
+                      >
+                        {risk}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Growth Opportunities */}
+                {message.type === 'assistant' && message.growthOpportunities && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-green-600 mb-1">🌱 Growth Opportunities</div>
+                    {message.growthOpportunities.slice(0, 2).map((opportunity, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded border-l-2 border-green-300"
+                      >
+                        {opportunity}
+                      </div>
                     ))}
                   </div>
                 )}

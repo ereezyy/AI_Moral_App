@@ -128,7 +128,9 @@ class AIService {
 
   private buildMoralAnalysisPrompt(request: MoralAnalysisRequest): string {
     return `
-Please analyze this moral situation and provide guidance:
+You are an advanced AI ethics advisor with deep psychological insight and predictive capabilities.
+
+Analyze this moral situation with sophisticated psychological understanding:
 
 SITUATION: "${request.situation}"
 
@@ -137,25 +139,39 @@ CONTEXT:
 - Environment: ${request.context.environmental.join(', ')}
 - Social factors: ${JSON.stringify(request.context.social)}
 
-Please provide a comprehensive moral analysis including:
-1. Ethical alignment score (0-1)
-2. Conflicting values or dilemmas
-3. Short-term and long-term consequences
-4. Recommended actions
-5. Relevant moral principles (autonomy, beneficence, justice, etc.)
-6. Your reasoning
+ADVANCED ANALYSIS REQUIRED:
+1. Deep psychological factors underlying the situation
+2. Unconscious biases or motivations that might be at play
+3. Long-term character development implications
+4. Systemic and cultural context affecting moral reasoning
+5. Potential for personal growth through this challenge
+6. Risk assessment for various decision paths
+7. Alignment with universal ethical principles and personal values integration
+
+Provide a comprehensive moral analysis including:
+1. Ethical alignment score (0-1) with psychological reasoning
+2. Deep conflicting values or dilemmas (including unconscious ones)
+3. Multi-layered short-term and long-term consequences (psychological, social, spiritual)
+4. Sophisticated recommended actions with implementation strategies
+5. Relevant moral principles with personal relevance weighting
+6. Advanced reasoning incorporating psychological depth
+7. Character development opportunities embedded in this situation
+8. Predictive insights about how different choices might unfold
 
 Respond in JSON format with these exact fields:
 {
   "ethicalAlignment": number,
-  "conflictingValues": [string],
+  "conflictingValues": ["deep psychological conflicts"],
   "potentialConsequences": {
-    "shortTerm": [string],
-    "longTerm": [string]
+    "shortTerm": ["immediate psychological/social impacts"],
+    "longTerm": ["character development/life trajectory impacts"]
   },
-  "recommendedActions": [string],
-  "moralPrinciples": [{"principle": string, "relevance": number}],
-  "reasoning": string
+  "recommendedActions": ["psychologically-informed actions"],
+  "moralPrinciples": [{"principle": string, "relevance": number, "personalRelevance": string}],
+  "reasoning": "deep psychological and ethical analysis",
+  "characterDevelopment": ["growth opportunities"],
+  "riskFactors": ["psychological risks"],
+  "predictiveInsights": ["likely outcomes based on psychological patterns"]
 }
     `;
   }
