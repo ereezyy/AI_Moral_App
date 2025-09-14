@@ -181,7 +181,20 @@ Respond in JSON format with these exact fields:
       // Try to extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        // Clean the JSON string before parsing
+        let cleanedJson = jsonMatch[0];
+        
+        // Remove comments (// and /* */)
+        cleanedJson = cleanedJson.replace(/\/\*[\s\S]*?\*\//g, '');
+        cleanedJson = cleanedJson.replace(/\/\/.*$/gm, '');
+        
+        // Remove trailing commas before closing brackets/braces
+        cleanedJson = cleanedJson.replace(/,(\s*[}\]])/g, '$1');
+        
+        // Remove any remaining whitespace issues
+        cleanedJson = cleanedJson.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+        
+        return JSON.parse(cleanedJson);
       }
     } catch (error) {
       console.error('Failed to parse Gemini response as JSON:', error);
@@ -193,7 +206,20 @@ Respond in JSON format with these exact fields:
 
   private parseXAIResponse(text: string): AIResponse {
     try {
-      return JSON.parse(text);
+      // Clean the JSON string before parsing
+      let cleanedJson = text;
+      
+      // Remove comments (// and /* */)
+      cleanedJson = cleanedJson.replace(/\/\*[\s\S]*?\*\//g, '');
+      cleanedJson = cleanedJson.replace(/\/\/.*$/gm, '');
+      
+      // Remove trailing commas before closing brackets/braces
+      cleanedJson = cleanedJson.replace(/,(\s*[}\]])/g, '$1');
+      
+      // Remove any remaining whitespace issues
+      cleanedJson = cleanedJson.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+      
+      return JSON.parse(cleanedJson);
     } catch (error) {
       console.error('Failed to parse XAI response as JSON:', error);
       return this.parseTextResponse(text);

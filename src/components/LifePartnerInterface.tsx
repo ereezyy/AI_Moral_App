@@ -108,7 +108,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
       );
 
       // Synthesize multidimensional response into conversational format
-      const synthesizedResponse = this.synthesizeIntoConversation(enhancedResponse, text);
+      const synthesizedResponse = synthesizeIntoConversation(enhancedResponse, text);
       
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
