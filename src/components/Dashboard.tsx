@@ -8,6 +8,8 @@ import { AudioMonitor } from './AudioMonitor';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { EnhancedRealtimeAlerts } from './EnhancedRealtimeAlerts';
 import { PredictiveInsights } from './PredictiveInsights';
+import { PsychologicalProfile } from './PsychologicalProfile';
+import { AdvancedCoachingPanel } from './AdvancedCoachingPanel';
 import { VideoAnalysis, AudioAnalysis } from '../types/analysis';
 
 export function Dashboard() {
@@ -73,6 +75,11 @@ export function Dashboard() {
             videoAnalysis={videoAnalysis}
             audioAnalysis={audioAnalysis}
           />
+          <PsychologicalProfile 
+            videoAnalysis={videoAnalysis}
+            audioAnalysis={audioAnalysis}
+          />
+          <AdvancedCoachingPanel />
         </div>
       </div>
     </div>
