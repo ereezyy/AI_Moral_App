@@ -150,6 +150,20 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
     } catch (error) {
       console.error('Voice input failed:', error);
       setIsListening(false);
+      
+      // Add user-friendly error message to chat
+      const errorMessage: Message = {
+        id: crypto.randomUUID(),
+        type: 'assistant',
+        content: "I'm having trouble with voice recognition right now. This might be due to a network issue or microphone permissions. Please check your internet connection and make sure your browser has microphone access, then try again. You can also type your message instead.",
+        timestamp: Date.now(),
+        emotion: 'concerned',
+        suggestions: [
+          "Check your microphone permissions",
+          "Try typing your message instead"
+        ]
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
   }, [isListening, handleSendMessage]);
 
