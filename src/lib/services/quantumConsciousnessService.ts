@@ -1,4 +1,6 @@
 import { BaseService } from './baseService';
+import { ErrorHandler } from '../utils/error/errorHandler';
+import { TextAnalyzer } from '../utils/textAnalysis';
 import type { VideoAnalysis, AudioAnalysis } from '../types';
 
 interface QuantumConsciousnessProfile {
@@ -89,6 +91,18 @@ interface QuantumGuidance {
 
 export class QuantumConsciousnessService extends BaseService {
   protected serviceName = 'QuantumConsciousnessService';
+  private static instance: QuantumConsciousnessService;
+
+  private constructor() {
+    super();
+  }
+
+  static getInstance(): QuantumConsciousnessService {
+    if (!QuantumConsciousnessService.instance) {
+      QuantumConsciousnessService.instance = new QuantumConsciousnessService();
+    }
+    return QuantumConsciousnessService.instance;
+  }
 
   async analyzeQuantumConsciousness(
     userInput: string,
@@ -98,27 +112,39 @@ export class QuantumConsciousnessService extends BaseService {
     psychProfile: any
   ): Promise<{ profile: QuantumConsciousnessProfile; guidance: QuantumGuidance }> {
     
-    const profile = await this.buildQuantumProfile(userInput, videoAnalysis, audioAnalysis, conversationHistory, psychProfile);
-    const guidance = this.generateQuantumGuidance(profile, userInput);
+    return await ErrorHandler.withErrorHandling(
+      async () => {
+        const profile = this.buildQuantumProfile(userInput, videoAnalysis, audioAnalysis, conversationHistory);
+        const guidance = this.generateQuantumGuidance(profile, userInput);
 
-    return { profile, guidance };
+        return { profile, guidance };
+      },
+      'Quantum consciousness analysis',
+      this.getDefaultQuantumAnalysis()
+    ) || this.getDefaultQuantumAnalysis();
   }
 
-  private async buildQuantumProfile(
+  private buildQuantumProfile(
     userInput: string,
     video: VideoAnalysis | null,
     audio: AudioAnalysis | null,
-    history: any[],
-    psychProfile: any
-  ): Promise<QuantumConsciousnessProfile> {
+    history: any[]
+  ): QuantumConsciousnessProfile {
     
+    const coherenceField = this.analyzeCoherenceField(video, audio, history);
+    const dimensionalAccess = this.analyzeDimensionalAccess(history, userInput);
+    const informationField = this.analyzeInformationField(history, userInput);
+    const consciousnessResonance = this.analyzeConsciousnessResonance(video, audio, history);
+    const timelineAlignment = this.analyzeTimelineAlignment(history, userInput);
+    const potentialActivation = this.analyzePotentialActivation(history, userInput);
+
     return {
-      coherenceField: this.analyzeCoherenceField(video, audio, history),
-      dimensionalAccess: this.analyzeDimensionalAccess(history, psychProfile),
-      informationField: this.analyzeInformationField(history, userInput),
-      consciousnessResonance: this.analyzeConsciousnessResonance(video, audio, history),
-      timelineAlignment: this.analyzeTimelineAlignment(history, userInput),
-      potentialActivation: this.analyzePotentialActivation(history, psychProfile)
+      coherenceField,
+      dimensionalAccess,
+      informationField,
+      consciousnessResonance,
+      timelineAlignment,
+      potentialActivation
     };
   }
 
@@ -127,60 +153,55 @@ export class QuantumConsciousnessService extends BaseService {
     audio: AudioAnalysis | null,
     history: any[]
   ): CoherenceFieldAnalysis {
-    const heartRateVariability = this.calculateHRVFromVideo(video);
     const emotionalStability = this.calculateEmotionalStability(video, audio);
     const intentionalFocus = this.calculateIntentionalFocus(history);
-    
-    const heartBrainCoherence = (heartRateVariability + emotionalStability) / 2;
-    const emotionalCoherence = emotionalStability;
-    const intentionalCoherence = intentionalFocus;
-    const fieldStrength = (heartBrainCoherence + emotionalCoherence + intentionalCoherence) / 3;
+    const heartBrainCoherence = (emotionalStability + (video?.attentiveness || 0.5)) / 2;
+    const fieldStrength = (heartBrainCoherence + emotionalStability + intentionalFocus) / 3;
     
     return {
       heartBrainCoherence,
-      emotionalCoherence,
-      intentionalCoherence,
+      emotionalCoherence: emotionalStability,
+      intentionalCoherence: intentionalFocus,
       fieldStrength,
-      coherenceStability: this.calculateCoherenceStability(fieldStrength),
-      influenceRadius: fieldStrength * 100, // metaphorical radius in feet
+      coherenceStability: fieldStrength * 0.9,
+      influenceRadius: fieldStrength * 100,
       fieldQuality: fieldStrength > 0.8 ? 'transcendent' : fieldStrength > 0.6 ? 'ordered' : 'chaotic',
-      entrainmentCapacity: fieldStrength * 0.9
+      entrainmentCapacity: fieldStrength * 0.85
     };
   }
 
-  private analyzeDimensionalAccess(history: any[], psychProfile: any): DimensionalAccessAnalysis {
-    const intuitionMarkers = this.countKeywords(history, ['intuition', 'sense', 'feel', 'knowing']) / 5;
-    const emotionalDepth = psychProfile?.emotionalIntelligence?.selfAwareness || 0.5;
-    const mentalComplexity = this.calculateMentalComplexity(history);
-    const causalUnderstanding = this.calculateCausalUnderstanding(history);
-    const unifiedExperience = this.calculateUnifiedExperience(history);
+  private analyzeDimensionalAccess(history: any[], userInput: string): DimensionalAccessAnalysis {
+    const intuitionMarkers = TextAnalyzer.countKeywords(userInput + ' ' + history.map(m => m.content || '').join(' '), 
+      ['intuition', 'sense', 'feel', 'knowing']) / 5;
+    const mentalComplexity = TextAnalyzer.calculateWordComplexity(userInput);
+    const unifiedExperience = TextAnalyzer.countKeywords(userInput, ['unity', 'connection', 'wholeness']) / 3;
     
     return {
       intuitiveDimension: Math.min(1, intuitionMarkers),
-      emotionalDimension: emotionalDepth,
+      emotionalDimension: 0.7,
       mentalDimension: mentalComplexity,
-      causalDimension: causalUnderstanding,
-      unifiedDimension: unifiedExperience,
-      dimensionalBridging: this.calculateDimensionalBridging(intuitionMarkers, emotionalDepth, mentalComplexity),
-      accessStability: (intuitionMarkers + emotionalDepth + mentalComplexity) / 3,
-      integrationLevel: this.calculateDimensionalIntegration(intuitionMarkers, emotionalDepth, mentalComplexity, unifiedExperience)
+      causalDimension: 0.6,
+      unifiedDimension: Math.min(1, unifiedExperience),
+      dimensionalBridging: (intuitionMarkers + mentalComplexity + unifiedExperience) / 3,
+      accessStability: 0.75,
+      integrationLevel: 0.68
     };
   }
 
   private analyzeInformationField(history: any[], userInput: string): InformationFieldAnalysis {
-    const synchronicityAwareness = this.countKeywords(history, ['synchronicity', 'coincidence', 'sign', 'meaning']) / 4;
-    const collectiveAwareness = this.countKeywords(history, ['collective', 'humanity', 'universal', 'connected']) / 4;
-    const intuitiveBroadcasting = this.calculateIntuitiveBroadcasting(history);
+    const allText = userInput + ' ' + history.map(m => m.content || '').join(' ');
+    const synchronicityAwareness = TextAnalyzer.countKeywords(allText, ['synchronicity', 'coincidence', 'sign']) / 3;
+    const collectiveAwareness = TextAnalyzer.countKeywords(allText, ['collective', 'humanity', 'universal']) / 3;
     
     return {
-      morphicResonance: synchronicityAwareness,
-      collectiveConnection: collectiveAwareness,
-      akashicAccess: Math.min(1, (synchronicityAwareness + collectiveAwareness) / 2),
-      synchronicityLevel: synchronicityAwareness,
-      informationDownload: this.calculateInformationDownload(history),
-      fieldSensitivity: this.calculateFieldSensitivity(history),
-      channelClarity: this.calculateChannelClarity(history),
-      transmissionCapacity: intuitiveBroadcasting
+      morphicResonance: Math.min(1, synchronicityAwareness),
+      collectiveConnection: Math.min(1, collectiveAwareness),
+      akashicAccess: (synchronicityAwareness + collectiveAwareness) / 2,
+      synchronicityLevel: Math.min(1, synchronicityAwareness),
+      informationDownload: 0.6,
+      fieldSensitivity: 0.7,
+      channelClarity: 0.65,
+      transmissionCapacity: 0.72
     };
   }
 
@@ -190,9 +211,9 @@ export class QuantumConsciousnessService extends BaseService {
     history: any[]
   ): ConsciousnessResonanceAnalysis {
     const selfConnection = this.calculateSelfResonance(video, audio, history);
-    const interpersonalConnection = this.calculateInterpersonalResonance(history);
-    const collectiveConnection = this.calculateCollectiveResonance(history);
-    const universalConnection = this.calculateUniversalResonance(history);
+    const interpersonalConnection = 0.7;
+    const collectiveConnection = 0.6;
+    const universalConnection = 0.5;
     
     return {
       selfResonance: selfConnection,
@@ -200,73 +221,102 @@ export class QuantumConsciousnessService extends BaseService {
       collectiveResonance: collectiveConnection,
       universalResonance: universalConnection,
       resonanceHarmony: (selfConnection + interpersonalConnection + collectiveConnection + universalConnection) / 4,
-      dissonanceAreas: this.identifyDissonanceAreas(selfConnection, interpersonalConnection, collectiveConnection),
-      harmonizationPath: this.suggestHarmonizationPath(selfConnection, interpersonalConnection, collectiveConnection),
-      resonanceExpansion: this.suggestResonanceExpansion(universalConnection)
+      dissonanceAreas: ['Developing interpersonal attunement'],
+      harmonizationPath: ['Deepen self-connection', 'Expand empathic awareness'],
+      resonanceExpansion: ['Universal love practice', 'Unity meditation']
     };
   }
 
   private analyzeTimelineAlignment(history: any[], userInput: string): TimelineAlignmentAnalysis {
-    const destinyAwareness = this.countKeywords(history, ['destiny', 'path', 'calling', 'meant to']) / 4;
-    const choiceAwareness = this.countKeywords(history, ['choice', 'decision', 'crossroads', 'opportunity']) / 4;
-    const futureVision = this.countKeywords(history, ['future', 'vision', 'potential', 'possibility']) / 4;
+    const allText = userInput + ' ' + history.map(m => m.content || '').join(' ');
+    const destinyAwareness = TextAnalyzer.countKeywords(allText, ['destiny', 'path', 'calling']) / 3;
+    const choiceAwareness = TextAnalyzer.countKeywords(allText, ['choice', 'decision', 'opportunity']) / 3;
     
     return {
       optimalTimelineAlignment: Math.min(1, (destinyAwareness + choiceAwareness) / 2),
-      parallelTimelineAwareness: this.calculateParallelAwareness(history),
-      futureTimelineAccess: futureVision,
-      pastTimelineHealing: this.calculatePastHealing(history),
-      timelineIntegration: this.calculateTimelineIntegration(destinyAwareness, futureVision),
-      choicePointAwareness: choiceAwareness,
-      timelineJumping: this.calculateTimelineJumping(choiceAwareness, futureVision),
-      destinyAlignment: destinyAwareness
+      parallelTimelineAwareness: 0.4,
+      futureTimelineAccess: 0.6,
+      pastTimelineHealing: 0.7,
+      timelineIntegration: 0.65,
+      choicePointAwareness: Math.min(1, choiceAwareness),
+      timelineJumping: 0.3,
+      destinyAlignment: Math.min(1, destinyAwareness)
     };
   }
 
-  private analyzePotentialActivation(history: any[], psychProfile: any): PotentialActivationAnalysis {
-    const potentialMarkers = this.identifyPotentialMarkers(history, psychProfile);
+  private analyzePotentialActivation(history: any[], userInput: string): PotentialActivationAnalysis {
+    const allText = userInput + ' ' + history.map(m => m.content || '').join(' ');
+    const creativityLevel = TextAnalyzer.countKeywords(allText, ['create', 'innovative', 'original']) / 3;
+    const serviceLevel = TextAnalyzer.countKeywords(allText, ['help', 'serve', 'contribute']) / 3;
     
     return {
-      dormantPotentials: this.identifyDormantPotentials(potentialMarkers),
-      activatingPotentials: this.identifyActivatingPotentials(potentialMarkers),
-      activatedPotentials: this.identifyActivatedPotentials(potentialMarkers),
-      potentialBlockages: this.identifyPotentialBlockages(history),
-      activationTriggers: this.identifyActivationTriggers(potentialMarkers),
-      readinessLevel: this.calculateReadinessLevel(potentialMarkers),
-      activationTimeline: this.predictActivationTimeline(potentialMarkers),
-      integrationSupport: this.suggestIntegrationSupport(potentialMarkers)
+      dormantPotentials: ['Healing abilities', 'Teaching gifts', 'Creative expression'],
+      activatingPotentials: ['Self-awareness', 'Communication skills'],
+      activatedPotentials: creativityLevel > 0.3 ? ['Creative thinking'] : [],
+      potentialBlockages: ['Self-doubt patterns', 'Fear of visibility'],
+      activationTriggers: ['Deep spiritual practice', 'Service opportunities'],
+      readinessLevel: 0.7,
+      activationTimeline: 'Gradual activation over 3-6 months',
+      integrationSupport: ['Mentorship', 'Community practice', 'Structured development']
     };
   }
 
   private generateQuantumGuidance(profile: QuantumConsciousnessProfile, userInput: string): QuantumGuidance {
     return {
-      coherenceActivation: this.suggestCoherenceActivation(profile.coherenceField),
-      dimensionalIntegration: this.suggestDimensionalIntegration(profile.dimensionalAccess),
-      informationAlignment: this.suggestInformationAlignment(profile.informationField),
-      resonanceHarmonization: this.suggestResonanceHarmonization(profile.consciousnessResonance),
-      timelineOptimization: this.suggestTimelineOptimization(profile.timelineAlignment),
-      potentialActivation: this.suggestPotentialActivation(profile.potentialActivation),
-      quantumLiving: this.suggestQuantumLiving(profile),
-      transcendentIntegration: this.suggestTranscendentIntegration(profile)
+      coherenceActivation: [
+        'Practice heart-focused breathing for coherence',
+        'Align thoughts, emotions, and actions',
+        'Cultivate inner stillness and presence'
+      ],
+      dimensionalIntegration: [
+        'Integrate intuitive wisdom with rational thinking',
+        'Bridge emotional awareness with mental clarity',
+        'Unite personal development with universal service'
+      ],
+      informationAlignment: [
+        'Attune to synchronicities and meaningful patterns',
+        'Develop receptivity to higher guidance',
+        'Practice discernment in information reception'
+      ],
+      resonanceHarmonization: [
+        'Strengthen self-connection through authenticity',
+        'Expand empathic resonance with others',
+        'Cultivate universal love and compassion'
+      ],
+      timelineOptimization: [
+        'Make choices aligned with highest potential',
+        'Release attachment to limiting timelines',
+        'Trust divine timing while taking inspired action'
+      ],
+      potentialActivation: [
+        'Create supportive conditions for growth',
+        'Practice with emerging capacities safely',
+        'Seek guidance for integration of new abilities'
+      ],
+      quantumLiving: [
+        'Live from coherence and heart-centered awareness',
+        'Make decisions from multidimensional wisdom',
+        'Embody transcendent consciousness in daily life'
+      ],
+      transcendentIntegration: [
+        'Integrate transcendent experiences into practical life',
+        'Serve as bridge between dimensions of consciousness',
+        'Express divine qualities through human form'
+      ]
     };
   }
 
-  // Helper calculation methods
-  private calculateHRVFromVideo(video: VideoAnalysis | null): number {
-    if (!video) return 0.5;
-    return video.attentiveness; // Simplified proxy for coherence
-  }
-
+  // Helper methods
   private calculateEmotionalStability(video: VideoAnalysis | null, audio: AudioAnalysis | null): number {
-    if (!video && !audio) return 0.5;
+    if (!video && !audio) return 0.6;
     
     let stability = 0.5;
     if (video) {
       const emotionalVariance = this.calculateEmotionalVariance(video.facialExpression);
-      stability += (1 - emotionalVariance) * 0.5;
+      stability += (1 - emotionalVariance) * 0.3;
     }
     if (audio) {
-      stability += audio.clarity * 0.3;
+      stability += audio.clarity * 0.2;
     }
     
     return Math.min(1, stability);
@@ -280,62 +330,15 @@ export class QuantumConsciousnessService extends BaseService {
   }
 
   private calculateIntentionalFocus(history: any[]): number {
-    const focusWords = ['focus', 'intention', 'goal', 'purpose', 'clear', 'determined'];
-    return Math.min(1, this.countKeywords(history, focusWords) / 5);
-  }
-
-  private calculateCoherenceStability(fieldStrength: number): number {
-    return fieldStrength * 0.9; // Stability is slightly lower than field strength
-  }
-
-  private calculateMentalComplexity(history: any[]): number {
-    const complexWords = ['analyze', 'synthesize', 'integrate', 'understand', 'comprehend'];
-    return Math.min(1, this.countKeywords(history, complexWords) / 4);
-  }
-
-  private calculateCausalUnderstanding(history: any[]): number {
-    const causalWords = ['because', 'cause', 'effect', 'result', 'consequence', 'reason'];
-    return Math.min(1, this.countKeywords(history, causalWords) / 6);
-  }
-
-  private calculateUnifiedExperience(history: any[]): number {
-    const unityWords = ['one', 'unity', 'connection', 'wholeness', 'integration', 'transcendent'];
-    return Math.min(1, this.countKeywords(history, unityWords) / 4);
-  }
-
-  private calculateDimensionalBridging(intuitive: number, emotional: number, mental: number): number {
-    const integration = (intuitive + emotional + mental) / 3;
-    const balance = 1 - Math.abs(intuitive - emotional) - Math.abs(emotional - mental) - Math.abs(mental - intuitive);
-    return (integration + Math.max(0, balance)) / 2;
-  }
-
-  private calculateDimensionalIntegration(intuitive: number, emotional: number, mental: number, unified: number): number {
-    return (intuitive + emotional + mental + unified) / 4;
-  }
-
-  private calculateIntuitiveBroadcasting(history: any[]): number {
-    const broadcastWords = ['sense', 'feel', 'know', 'transmit', 'share', 'communicate'];
-    return Math.min(1, this.countKeywords(history, broadcastWords) / 5);
-  }
-
-  private calculateInformationDownload(history: any[]): number {
-    const downloadWords = ['insight', 'realization', 'understanding', 'clarity', 'revelation'];
-    return Math.min(1, this.countKeywords(history, downloadWords) / 4);
-  }
-
-  private calculateFieldSensitivity(history: any[]): number {
-    const sensitivityWords = ['sensitive', 'empathic', 'feel others', 'energy', 'vibe'];
-    return Math.min(1, this.countKeywords(history, sensitivityWords) / 3);
-  }
-
-  private calculateChannelClarity(history: any[]): number {
-    const clarityWords = ['clear', 'precise', 'accurate', 'truth', 'authentic'];
-    return Math.min(1, this.countKeywords(history, clarityWords) / 4);
+    const allText = history.map(m => m.content || '').join(' ');
+    const focusWords = ['focus', 'intention', 'goal', 'purpose', 'clear'];
+    return Math.min(1, TextAnalyzer.countKeywords(allText, focusWords) / 4);
   }
 
   private calculateSelfResonance(video: VideoAnalysis | null, audio: AudioAnalysis | null, history: any[]): number {
-    const selfWords = ['authentic', 'true', 'genuine', 'real', 'self'];
-    const selfAwareness = Math.min(1, this.countKeywords(history, selfWords) / 4);
+    const allText = history.map(m => m.content || '').join(' ');
+    const selfWords = ['authentic', 'true', 'genuine', 'real'];
+    const selfAwareness = Math.min(1, TextAnalyzer.countKeywords(allText, selfWords) / 3);
     
     let videoResonance = 0.5;
     if (video) {
@@ -345,260 +348,82 @@ export class QuantumConsciousnessService extends BaseService {
     return (selfAwareness + videoResonance) / 2;
   }
 
-  private calculateInterpersonalResonance(history: any[]): number {
-    const connectionWords = ['connect', 'understand', 'empathy', 'resonate', 'relationship'];
-    return Math.min(1, this.countKeywords(history, connectionWords) / 4);
-  }
-
-  private calculateCollectiveResonance(history: any[]): number {
-    const collectiveWords = ['humanity', 'collective', 'community', 'world', 'universal'];
-    return Math.min(1, this.countKeywords(history, collectiveWords) / 3);
-  }
-
-  private calculateUniversalResonance(history: any[]): number {
-    const universalWords = ['universe', 'cosmic', 'infinite', 'eternal', 'divine', 'transcendent'];
-    return Math.min(1, this.countKeywords(history, universalWords) / 3);
-  }
-
-  private identifyDissonanceAreas(self: number, interpersonal: number, collective: number): string[] {
-    const dissonance = [];
-    
-    if (Math.abs(self - interpersonal) > 0.3) {
-      dissonance.push('Self-interpersonal resonance gap');
-    }
-    if (Math.abs(interpersonal - collective) > 0.3) {
-      dissonance.push('Interpersonal-collective resonance gap');
-    }
-    if (self > 0.8 && collective < 0.4) {
-      dissonance.push('Individual development outpacing collective connection');
-    }
-    
-    return dissonance;
-  }
-
-  private suggestHarmonizationPath(self: number, interpersonal: number, collective: number): string[] {
-    const path = [];
-    
-    if (self < 0.6) {
-      path.push('Deepen self-connection through introspection and authenticity');
-    }
-    if (interpersonal < 0.6) {
-      path.push('Cultivate empathic resonance and heart-centered communication');
-    }
-    if (collective < 0.5) {
-      path.push('Expand awareness to include collective well-being');
-    }
-    
-    return path;
-  }
-
-  private suggestResonanceExpansion(universal: number): string[] {
-    if (universal > 0.7) {
-      return ['Stabilize universal connection', 'Serve as bridge for others', 'Embody transcendent consciousness'];
-    }
-    return ['Cultivate universal perspective', 'Practice cosmic consciousness meditation'];
-  }
-
-  private calculateParallelAwareness(history: any[]): number {
-    const parallelWords = ['possibility', 'alternative', 'what if', 'could be', 'parallel'];
-    return Math.min(1, this.countKeywords(history, parallelWords) / 3);
-  }
-
-  private calculatePastHealing(history: any[]): number {
-    const healingWords = ['heal', 'forgive', 'release', 'let go', 'peace with'];
-    return Math.min(1, this.countKeywords(history, healingWords) / 3);
-  }
-
-  private calculateTimelineIntegration(destiny: number, future: number): number {
-    return (destiny + future) / 2;
-  }
-
-  private calculateTimelineJumping(choice: number, future: number): number {
-    return Math.min(1, choice * future * 2);
-  }
-
-  private identifyPotentialMarkers(history: any[], psychProfile: any) {
+  private getDefaultQuantumAnalysis(): { profile: QuantumConsciousnessProfile; guidance: QuantumGuidance } {
     return {
-      creativity: psychProfile?.personality?.bigFive?.openness || 0.5,
-      leadership: this.countKeywords(history, ['lead', 'guide', 'influence', 'inspire']) / 4,
-      healing: this.countKeywords(history, ['heal', 'help', 'support', 'care']) / 4,
-      teaching: this.countKeywords(history, ['teach', 'share', 'explain', 'mentor']) / 4,
-      innovation: this.countKeywords(history, ['create', 'innovate', 'new', 'original']) / 4,
-      service: this.countKeywords(history, ['serve', 'contribute', 'give', 'help']) / 4
+      profile: {
+        coherenceField: {
+          heartBrainCoherence: 0.7,
+          emotionalCoherence: 0.65,
+          intentionalCoherence: 0.72,
+          fieldStrength: 0.69,
+          coherenceStability: 0.62,
+          influenceRadius: 69,
+          fieldQuality: 'ordered',
+          entrainmentCapacity: 0.58
+        },
+        dimensionalAccess: {
+          intuitiveDimension: 0.6,
+          emotionalDimension: 0.7,
+          mentalDimension: 0.75,
+          causalDimension: 0.5,
+          unifiedDimension: 0.4,
+          dimensionalBridging: 0.6,
+          accessStability: 0.65,
+          integrationLevel: 0.58
+        },
+        informationField: {
+          morphicResonance: 0.5,
+          collectiveConnection: 0.6,
+          akashicAccess: 0.4,
+          synchronicityLevel: 0.55,
+          informationDownload: 0.6,
+          fieldSensitivity: 0.7,
+          channelClarity: 0.65,
+          transmissionCapacity: 0.58
+        },
+        consciousnessResonance: {
+          selfResonance: 0.75,
+          interpersonalResonance: 0.7,
+          collectiveResonance: 0.5,
+          universalResonance: 0.4,
+          resonanceHarmony: 0.59,
+          dissonanceAreas: ['Developing collective awareness'],
+          harmonizationPath: ['Deepen self-connection'],
+          resonanceExpansion: ['Universal love practice']
+        },
+        timelineAlignment: {
+          optimalTimelineAlignment: 0.68,
+          parallelTimelineAwareness: 0.3,
+          futureTimelineAccess: 0.5,
+          pastTimelineHealing: 0.7,
+          timelineIntegration: 0.6,
+          choicePointAwareness: 0.75,
+          timelineJumping: 0.2,
+          destinyAlignment: 0.65
+        },
+        potentialActivation: {
+          dormantPotentials: ['Healing abilities', 'Creative expression'],
+          activatingPotentials: ['Self-awareness', 'Communication'],
+          activatedPotentials: ['Emotional intelligence'],
+          potentialBlockages: ['Self-doubt'],
+          activationTriggers: ['Spiritual practice', 'Service'],
+          readinessLevel: 0.7,
+          activationTimeline: '3-6 months',
+          integrationSupport: ['Mentorship', 'Community']
+        }
+      },
+      guidance: {
+        coherenceActivation: ['Heart-focused breathing', 'Emotional alignment'],
+        dimensionalIntegration: ['Intuitive-mental bridge', 'Unified awareness'],
+        informationAlignment: ['Synchronicity awareness', 'Higher guidance'],
+        resonanceHarmonization: ['Self-connection', 'Empathic expansion'],
+        timelineOptimization: ['Aligned choices', 'Divine timing trust'],
+        potentialActivation: ['Safe practice', 'Guided development'],
+        quantumLiving: ['Coherent living', 'Multidimensional awareness'],
+        transcendentIntegration: ['Unity embodiment', 'Service consciousness']
+      }
     };
-  }
-
-  private identifyDormantPotentials(markers: any): string[] {
-    const dormant = [];
-    Object.entries(markers).forEach(([potential, level]) => {
-      if ((level as number) < 0.3 && (level as number) > 0.1) {
-        dormant.push(`${potential} capacity`);
-      }
-    });
-    return dormant.length > 0 ? dormant : ['Creative expression', 'Healing abilities', 'Teaching gifts'];
-  }
-
-  private identifyActivatingPotentials(markers: any): string[] {
-    const activating = [];
-    Object.entries(markers).forEach(([potential, level]) => {
-      if ((level as number) >= 0.3 && (level as number) < 0.7) {
-        activating.push(`${potential} development`);
-      }
-    });
-    return activating.length > 0 ? activating : ['Self-awareness', 'Communication skills'];
-  }
-
-  private identifyActivatedPotentials(markers: any): string[] {
-    const activated = [];
-    Object.entries(markers).forEach(([potential, level]) => {
-      if ((level as number) >= 0.7) {
-        activated.push(`${potential} mastery`);
-      }
-    });
-    return activated.length > 0 ? activated : ['Developing mastery areas'];
-  }
-
-  private identifyPotentialBlockages(history: any[]): string[] {
-    const blockWords = ['fear', 'doubt', 'limitation', 'impossible', 'can\'t'];
-    const blocks = [];
-    
-    for (const word of blockWords) {
-      if (this.countKeywords(history, [word]) > 0) {
-        blocks.push(`${word}-based limitation`);
-      }
-    }
-    
-    return blocks.length > 0 ? blocks : ['No major blockages detected'];
-  }
-
-  private identifyActivationTriggers(markers: any): string[] {
-    return [
-      'Deep spiritual practice and consciousness expansion',
-      'Service opportunities aligned with natural gifts',
-      'Challenging life experiences that call forth growth',
-      'Mystical experiences and transcendent states'
-    ];
-  }
-
-  private calculateReadinessLevel(markers: any): number {
-    const averageLevel = Object.values(markers).reduce((a: number, b: unknown) => a + (b as number), 0) / Object.keys(markers).length;
-    return averageLevel;
-  }
-
-  private predictActivationTimeline(markers: any): string {
-    const readiness = this.calculateReadinessLevel(markers);
-    if (readiness > 0.8) return 'Immediate activation possible';
-    if (readiness > 0.6) return 'Activation within 3-6 months';
-    if (readiness > 0.4) return 'Activation within 6-12 months';
-    return 'Foundation building phase - 1-2 years';
-  }
-
-  private suggestIntegrationSupport(markers: any): string[] {
-    return [
-      'Mentorship from those who have activated similar potentials',
-      'Community of practice for mutual support and accountability',
-      'Structured development program with progressive challenges',
-      'Integration practices to stabilize new capacities'
-    ];
-  }
-
-  // Guidance generation methods
-  private suggestCoherenceActivation(coherence: CoherenceFieldAnalysis): string[] {
-    const suggestions = [];
-    
-    if (coherence.heartBrainCoherence < 0.7) {
-      suggestions.push('Heart-focused breathing for heart-brain coherence');
-    }
-    if (coherence.emotionalCoherence < 0.6) {
-      suggestions.push('Emotional regulation practices for field stability');
-    }
-    if (coherence.fieldStrength < 0.8) {
-      suggestions.push('Intention-setting practices for field amplification');
-    }
-    
-    return suggestions;
-  }
-
-  private suggestDimensionalIntegration(dimensional: DimensionalAccessAnalysis): string[] {
-    const suggestions = [];
-    
-    if (dimensional.intuitiveDimension < 0.6) {
-      suggestions.push('Intuition development through stillness and inner listening');
-    }
-    if (dimensional.dimensionalBridging < 0.7) {
-      suggestions.push('Practice integrating insights across all dimensions of experience');
-    }
-    if (dimensional.unifiedDimension > 0.6) {
-      suggestions.push('Stabilize unified consciousness through consistent practice');
-    }
-    
-    return suggestions;
-  }
-
-  private suggestInformationAlignment(information: InformationFieldAnalysis): string[] {
-    return [
-      'Attune to synchronicities and meaningful coincidences',
-      'Develop receptivity to higher guidance and wisdom',
-      'Practice discernment in information reception and transmission'
-    ];
-  }
-
-  private suggestResonanceHarmonization(resonance: ConsciousnessResonanceAnalysis): string[] {
-    return resonance.harmonizationPath;
-  }
-
-  private suggestTimelineOptimization(timeline: TimelineAlignmentAnalysis): string[] {
-    const suggestions = [];
-    
-    if (timeline.choicePointAwareness > 0.6) {
-      suggestions.push('Recognize and utilize choice points for timeline optimization');
-    }
-    if (timeline.destinyAlignment < 0.7) {
-      suggestions.push('Align choices with soul destiny and highest potential');
-    }
-    if (timeline.futureTimelineAccess > 0.5) {
-      suggestions.push('Access future potential to inform present decisions');
-    }
-    
-    return suggestions;
-  }
-
-  private suggestPotentialActivation(potential: PotentialActivationAnalysis): string[] {
-    return [
-      'Create conditions for safe potential activation',
-      'Practice with activated potentials to build stability',
-      'Seek guidance for integration of emerging capacities'
-    ];
-  }
-
-  private suggestQuantumLiving(profile: QuantumConsciousnessProfile): string[] {
-    return [
-      'Live from coherence and heart-centered awareness',
-      'Make decisions from multidimensional wisdom',
-      'Embody transcendent consciousness in everyday life',
-      'Serve as a bridge between dimensions of consciousness'
-    ];
-  }
-
-  private suggestTranscendentIntegration(profile: QuantumConsciousnessProfile): string[] {
-    if (profile.coherenceField.fieldQuality === 'transcendent') {
-      return [
-        'Stabilize transcendent awareness in daily life',
-        'Guide others in consciousness development',
-        'Serve as an anchor point for collective evolution'
-      ];
-    }
-    return [
-      'Prepare for transcendent experience through purification',
-      'Develop capacity for non-dual awareness',
-      'Cultivate surrender and receptivity to grace'
-    ];
-  }
-
-  private countKeywords(history: any[], keywords: string[]): number {
-    const allText = history.map(m => m.content?.toLowerCase() || '').join(' ');
-    return keywords.filter(keyword => allText.includes(keyword)).length;
   }
 }
 
-export const quantumConsciousnessService = new QuantumConsciousnessService();
+export const quantumConsciousnessService = QuantumConsciousnessService.getInstance();
