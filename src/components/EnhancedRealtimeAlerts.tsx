@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Brain, AlertTriangle, CheckCircle, Info, X, TrendingUp, Shield, Zap, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { conversationService } from '../lib/services/conversationService';
 
 interface EnhancedAlert {
   id: string;
@@ -15,85 +16,33 @@ interface EnhancedAlert {
   confidence?: number;
 }
 
-const ENHANCED_ALERTS = [
-  {
-    type: 'predictive' as const,
-    severity: 'high' as const,
-    title: 'Decision Pattern Detected',
-    message: 'Based on your conversation patterns, you may be approaching a significant decision point. Your stress indicators suggest taking time to process emotions first.',
-    actionable: true,
-    predictions: ['Decision confidence may increase after emotional processing', 'Support from trusted advisors likely helpful'],
-    interventions: ['Take 10 minutes for mindful breathing', 'Write down your core concerns', 'Identify your top 3 values relevant to this decision'],
-    confidence: 0.82
-  },
-  {
-    type: 'behavioral' as const,
-    severity: 'medium' as const,
-    title: 'Behavioral Pattern Analysis',
-    message: 'Your communication style indicates high conscientiousness but potential perfectionism tendencies. This strength can sometimes lead to decision paralysis.',
-    actionable: true,
-    predictions: ['May benefit from "good enough" decision frameworks', 'Likely to overthink without time boundaries'],
-    interventions: ['Set a decision deadline', 'Use 80% confidence rule for decisions', 'Practice self-compassion'],
-    confidence: 0.76
-  },
-  {
-    type: 'growth' as const,
-    severity: 'low' as const,
-    title: 'Growth Opportunity Identified',
-    message: 'Your recent conversations show increased emotional intelligence. This is an excellent foundation for developing stronger intuitive decision-making.',
-    actionable: true,
-    predictions: ['Continued growth in self-awareness likely', 'Decision confidence expected to improve'],
-    interventions: ['Practice trusting first instincts', 'Keep a decision outcome journal', 'Celebrate small decision wins'],
-    confidence: 0.89
-  },
-  {
-    type: 'ethical' as const,
-    severity: 'high' as const,
-    title: 'Values Alignment Check',
-    message: 'The current situation appears to involve competing values. Your past patterns suggest you prioritize integrity and relationships - ensure your decision honors both.',
-    actionable: true,
-    predictions: ['Decision alignment with values will increase long-term satisfaction', 'Potential short-term discomfort but long-term growth'],
-    interventions: ['List your top 5 values', 'Consider how each option aligns', 'Visualize yourself in 5 years - which choice feels right?'],
-    confidence: 0.78
-  },
-  {
-    type: 'warning' as const,
-    severity: 'critical' as const,
-    title: 'Stress Threshold Alert',
-    message: 'Multiple indicators suggest you may be approaching your stress capacity. Your decision-making quality typically decreases when overwhelmed.',
-    actionable: true,
-    predictions: ['Decision quality may be compromised without stress management', 'Recovery time needed before major decisions'],
-    interventions: ['Postpone non-urgent decisions', 'Activate support network', 'Consider professional stress management support'],
-    confidence: 0.91
-  }
-];
 
 export function EnhancedRealtimeAlerts() {
   const [alerts, setAlerts] = useState<EnhancedAlert[]>([]);
   const [expandedAlert, setExpandedAlert] = useState<string | null>(null);
 
   useEffect(() => {
-    // Generate meaningful, context-aware alerts less frequently
+    // Generate real-time alerts based on conversation patterns
     const interval = setInterval(() => {
-      // Only 20% chance of generating an alert (more selective)
-      const shouldAddAlert = Math.random() > 0.8;
+      const conversationHistory = conversationService.getConversationHistory(5);
+      const userProfile = conversationService.getUserProfile();
       
-      if (shouldAddAlert && alerts.length < 4) {
-        const randomAlert = ENHANCED_ALERTS[Math.floor(Math.random() * ENHANCED_ALERTS.length)];
-        
-        const newAlert: EnhancedAlert = {
+      const newAlert = generateContextualAlert(conversationHistory, userProfile);
+      
+      if (newAlert && alerts.length < 3) {
+        const alert: EnhancedAlert = {
           id: Math.random().toString(36).substr(2, 9),
-          ...randomAlert,
-          timestamp: Date.now(),
+          ...newAlert,
+          timestamp: Date.now()
         };
         
-        setAlerts(prev => [newAlert, ...prev.slice(0, 3)]);
+        setAlerts(prev => [alert, ...prev]);
         
         // Auto-dismiss low priority alerts
-        if (randomAlert.severity === 'low') {
+        if (alert.severity === 'low') {
           setTimeout(() => {
-            setAlerts(prev => prev.filter(alert => alert.id !== newAlert.id));
-          }, 12000);
+            setAlerts(prev => prev.filter(a => a.id !== alert.id));
+          }, 10000);
         }
       }
     }, 15000); // Every 15 seconds
@@ -101,6 +50,61 @@ export function EnhancedRealtimeAlerts() {
     return () => clearInterval(interval);
   }, [alerts.length]);
 
+  const generateContextualAlert = (history: any[], profile: any): Partial<EnhancedAlert> | null => {
+    if (history.length === 0) return null;
+    
+    const recentMessages = history.slice(-3);
+    const recentText = recentMessages.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    // Stress detection
+    if (recentText.includes('stress') || recentText.includes('overwhelm')) {
+      return {
+        type: 'warning',
+        severity: 'high',
+        title: 'Stress Indicators Detected',
+        message: 'I notice stress themes in our recent conversation. Let\'s explore some immediate relief strategies.',
+        actionable: true,
+        interventions: ['Take 5 deep breaths', 'List your top 3 priorities', 'Consider what support you need right now']
+      };
+    }
+    
+    // Decision support
+    if (recentText.includes('decision') || recentText.includes('choice')) {
+      return {
+        type: 'info',
+        severity: 'medium',
+        title: 'Decision Support Available',
+        message: 'You\'re working through a decision. I can help you explore your options systematically.',
+        actionable: true,
+        interventions: ['Clarify your values', 'List pros and cons', 'Consider long-term impact']
+      };
+    }
+    
+    // Growth recognition
+    if (recentText.includes('understand') || recentText.includes('realize')) {
+      return {
+        type: 'success',
+        severity: 'low',
+        title: 'Insight Development',
+        message: 'You\'re showing great self-awareness and understanding. This insight can guide future growth.',
+        actionable: false
+      };
+    }
+    
+    // Random chance for general encouragement (10% chance)
+    if (Math.random() > 0.9 && history.length > 3) {
+      return {
+        type: 'info',
+        severity: 'low',
+        title: 'Reflection Opportunity',
+        message: 'Our conversation shows thoughtful self-reflection. Consider how these insights apply to your daily life.',
+        actionable: true,
+        interventions: ['Journal about key insights', 'Apply one learning to today', 'Share insights with someone you trust']
+      };
+    }
+    
+    return null;
+  };
   const dismissAlert = (id: string) => {
     setAlerts(prev => prev.filter(alert => alert.id !== id));
     if (expandedAlert === id) {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Brain, Heart, Zap, CheckCircle, AlertTriangle, TrendingUp, Book } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { realTimeCoachingService } from '../lib/services/realTimeCoachingService';
 import { conversationService } from '../lib/services/conversationService';
 
 interface CoachingSession {
@@ -29,142 +28,25 @@ export function AdvancedCoachingPanel() {
       setIsGenerating(true);
       
       try {
-        // Simulate getting coaching guidance
-        const mockSession: CoachingSession = {
+        const conversationHistory = conversationService.getConversationHistory(10);
+        const userProfile = conversationService.getUserProfile();
+        
+        const realSession: CoachingSession = {
           id: 'session-' + Date.now(),
-          goals: [
-            'Develop emotional regulation skills',
-            'Improve decision-making confidence',
-            'Strengthen communication patterns'
-          ],
-          interventions: [
-            {
-              id: 'emotional-regulation-1',
-              type: 'emotional',
-              priority: 'high',
-              title: 'Emotional Awareness Building',
-              description: 'Practice identifying and labeling emotions in real-time',
-              techniques: ['Emotion tracking', 'Body awareness', 'Mindful observation'],
-              expectedOutcome: 'Increased emotional vocabulary and self-awareness',
-              timeEstimate: '5-10 minutes daily',
-              status: 'active'
-            },
-            {
-              id: 'cognitive-reframe-1',
-              type: 'cognitive',
-              priority: 'medium',
-              title: 'Thought Pattern Recognition',
-              description: 'Identify and challenge unhelpful thinking patterns',
-              techniques: ['Thought logging', 'Evidence examination', 'Alternative perspectives'],
-              expectedOutcome: 'More balanced and realistic thinking',
-              timeEstimate: '10-15 minutes as needed',
-              status: 'pending'
-            },
-            {
-              id: 'behavioral-activation-1',
-              type: 'behavioral',
-              priority: 'medium',
-              title: 'Values-Based Action',
-              description: 'Align daily actions with core values and goals',
-              techniques: ['Value clarification', 'Action planning', 'Progress tracking'],
-              expectedOutcome: 'Increased sense of purpose and fulfillment',
-              timeEstimate: '15-20 minutes weekly',
-              status: 'pending'
-            }
-          ],
-          skillBuilding: [
-            {
-              skill: 'Emotional Regulation',
-              currentLevel: 0.6,
-              targetLevel: 0.8,
-              exercises: [
-                'Daily emotion check-ins',
-                'Breathing techniques practice',
-                'Progressive muscle relaxation',
-                'Cognitive reappraisal exercises'
-              ],
-              practiceSchedule: 'Daily 10-15 minute sessions',
-              progressIndicators: [
-                'Faster emotional recovery',
-                'Better emotion identification',
-                'Reduced emotional reactivity'
-              ]
-            },
-            {
-              skill: 'Decision Making',
-              currentLevel: 0.7,
-              targetLevel: 0.85,
-              exercises: [
-                'Decision-making framework practice',
-                'Values clarification exercises',
-                'Outcome prediction practice',
-                'Decision confidence building'
-              ],
-              practiceSchedule: 'Apply to daily decisions',
-              progressIndicators: [
-                'Faster decision making',
-                'Higher satisfaction with choices',
-                'Reduced decision regret'
-              ]
-            }
-          ],
+          goals: this.generatePersonalizedGoals(conversationHistory, userProfile),
+          interventions: this.generatePersonalizedInterventions(conversationHistory, userProfile),
+          skillBuilding: this.generatePersonalizedSkillBuilding(conversationHistory, userProfile),
           emotionalRegulation: {
-            currentEmotionalState: 'focused',
+            currentEmotionalState: this.assessCurrentEmotionalState(conversationHistory),
             regulationNeeded: false,
             techniques: {
               immediate: ['Deep breathing', 'Grounding exercises'],
               shortTerm: ['Journaling', 'Physical movement'],
               longTerm: ['Mindfulness meditation', 'Therapy skills']
             },
-            customizedApproach: 'Based on your analytical nature, structured approaches work best for you.'
+            customizedApproach: this.createCustomizedApproach(userProfile)
           },
-          exercises: [
-            {
-              id: 'thought-challenge-1',
-              title: 'Challenge Negative Thoughts',
-              type: 'cognitive',
-              description: 'When you notice a negative thought, ask: What evidence supports this? What evidence contradicts it?',
-              steps: [
-                'Notice the negative thought',
-                'Write it down exactly as it occurred',
-                'List evidence that supports the thought',
-                'List evidence that contradicts the thought',
-                'Create a more balanced perspective'
-              ],
-              timeEstimate: '5-10 minutes',
-              difficulty: 'beginner'
-            },
-            {
-              id: 'values-alignment-1',
-              title: 'Values Alignment Check',
-              type: 'behavioral',
-              description: 'Before making decisions, check how well they align with your core values',
-              steps: [
-                'Identify the decision you need to make',
-                'List your top 5 values',
-                'Rate how well each option aligns with each value (1-10)',
-                'Calculate alignment scores',
-                'Choose the option with highest alignment'
-              ],
-              timeEstimate: '10-15 minutes',
-              difficulty: 'intermediate'
-            },
-            {
-              id: 'emotional-regulation-1',
-              title: '4-7-8 Breathing for Calm',
-              type: 'emotional',
-              description: 'Use this breathing technique when feeling overwhelmed or anxious',
-              steps: [
-                'Inhale through your nose for 4 counts',
-                'Hold your breath for 7 counts',
-                'Exhale through your mouth for 8 counts',
-                'Repeat 3-4 times',
-                'Notice the change in your body and mind'
-              ],
-              timeEstimate: '2-3 minutes',
-              difficulty: 'beginner'
-            }
-          ],
+          exercises: this.generatePersonalizedExercises(conversationHistory, userProfile),
           progress: {
             completed: [],
             inProgress: ['emotional-regulation-1'],
@@ -172,7 +54,7 @@ export function AdvancedCoachingPanel() {
           }
         };
 
-        setActiveSession(mockSession);
+        setActiveSession(realSession);
       } catch (error) {
         console.error('Failed to initialize coaching session:', error);
       } finally {
@@ -183,6 +65,233 @@ export function AdvancedCoachingPanel() {
     initializeSession();
   }, []);
 
+  const generatePersonalizedGoals = (history: any[], profile: any): string[] => {
+    const goals = [];
+    const allText = history.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    if (allText.includes('stress') || allText.includes('overwhelm')) {
+      goals.push('Develop effective stress management strategies');
+    }
+    if (allText.includes('decision') || allText.includes('choice')) {
+      goals.push('Build confidence in decision-making');
+    }
+    if (allText.includes('relationship') || allText.includes('communication')) {
+      goals.push('Enhance communication and relationship skills');
+    }
+    
+    if (goals.length === 0) {
+      goals.push('Increase self-awareness and emotional intelligence');
+      goals.push('Develop personalized coping strategies');
+    }
+    
+    return goals.slice(0, 3);
+  };
+
+  const generatePersonalizedInterventions = (history: any[], profile: any): any[] => {
+    const interventions = [];
+    const allText = history.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    if (allText.includes('stress') || allText.includes('overwhelm')) {
+      interventions.push({
+        id: 'stress-management-1',
+        type: 'emotional',
+        priority: 'high',
+        title: 'Stress Regulation Techniques',
+        description: 'Immediate and long-term strategies for managing stress and overwhelm',
+        techniques: ['Progressive muscle relaxation', 'Cognitive restructuring', 'Time management'],
+        expectedOutcome: 'Reduced stress levels and improved coping',
+        timeEstimate: '10-15 minutes daily',
+        status: 'active'
+      });
+    }
+    
+    if (allText.includes('decision') || allText.includes('choice')) {
+      interventions.push({
+        id: 'decision-support-1',
+        type: 'cognitive',
+        priority: 'medium',
+        title: 'Decision-Making Framework',
+        description: 'Structured approach to making decisions with confidence',
+        techniques: ['Values-based decision matrix', 'Pros and cons analysis', 'Future self visualization'],
+        expectedOutcome: 'Clearer decision-making process and increased confidence',
+        timeEstimate: '15-20 minutes per decision',
+        status: 'pending'
+      });
+    }
+    
+    // Default intervention if no specific needs identified
+    if (interventions.length === 0) {
+      interventions.push({
+        id: 'awareness-building-1',
+        type: 'emotional',
+        priority: 'medium',
+        title: 'Self-Awareness Development',
+        description: 'Building foundation skills for emotional and psychological awareness',
+        techniques: ['Mindful observation', 'Emotion labeling', 'Pattern recognition'],
+        expectedOutcome: 'Enhanced self-understanding and emotional clarity',
+        timeEstimate: '5-10 minutes daily',
+        status: 'active'
+      });
+    }
+    
+    return interventions;
+  };
+
+  const generatePersonalizedSkillBuilding = (history: any[], profile: any): any[] => {
+    const skills = [];
+    const allText = history.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    // Always include emotional regulation as foundational
+    skills.push({
+      skill: 'Emotional Regulation',
+      currentLevel: 0.6,
+      targetLevel: 0.8,
+      exercises: [
+        'Daily emotion check-ins',
+        'Breathing exercises',
+        'Mindfulness practice',
+        'Stress response awareness'
+      ],
+      practiceSchedule: 'Daily 10-minute sessions',
+      progressIndicators: [
+        'Better emotion recognition',
+        'Faster emotional recovery',
+        'Reduced emotional reactivity'
+      ]
+    });
+    
+    if (allText.includes('decision') || allText.includes('choice')) {
+      skills.push({
+        skill: 'Decision Making',
+        currentLevel: 0.7,
+        targetLevel: 0.85,
+        exercises: [
+          'Values clarification',
+          'Decision frameworks',
+          'Outcome visualization',
+          'Confidence building'
+        ],
+        practiceSchedule: 'Apply to daily decisions',
+        progressIndicators: [
+          'Faster decision making',
+          'Higher satisfaction with choices',
+          'Reduced decision anxiety'
+        ]
+      });
+    }
+    
+    if (allText.includes('communication') || allText.includes('relationship')) {
+      skills.push({
+        skill: 'Communication',
+        currentLevel: 0.65,
+        targetLevel: 0.8,
+        exercises: [
+          'Active listening practice',
+          'Clear expression techniques',
+          'Boundary setting',
+          'Conflict resolution'
+        ],
+        practiceSchedule: 'Practice in daily interactions',
+        progressIndicators: [
+          'Clearer self-expression',
+          'Better understanding of others',
+          'Stronger relationships'
+        ]
+      });
+    }
+    
+    return skills.slice(0, 3);
+  };
+
+  const generatePersonalizedExercises = (history: any[], profile: any): any[] => {
+    const exercises = [];
+    const allText = history.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    // Always include basic emotional regulation
+    exercises.push({
+      id: 'breathing-exercise-1',
+      title: '4-7-8 Breathing for Calm',
+      type: 'emotional',
+      description: 'Use this breathing technique when feeling stressed or overwhelmed',
+      steps: [
+        'Find a comfortable position',
+        'Inhale through your nose for 4 counts',
+        'Hold your breath for 7 counts',
+        'Exhale through your mouth for 8 counts',
+        'Repeat 3-4 times and notice the change'
+      ],
+      timeEstimate: '2-3 minutes',
+      difficulty: 'beginner'
+    });
+    
+    if (allText.includes('decision') || allText.includes('choice')) {
+      exercises.push({
+        id: 'values-decision-1',
+        title: 'Values-Based Decision Making',
+        type: 'cognitive',
+        description: 'Make decisions that align with your core values',
+        steps: [
+          'Identify the decision you need to make',
+          'List your top 5 personal values',
+          'Rate how each option aligns with your values (1-10)',
+          'Calculate total alignment scores',
+          'Choose the option with highest value alignment'
+        ],
+        timeEstimate: '10-15 minutes',
+        difficulty: 'intermediate'
+      });
+    }
+    
+    if (allText.includes('thought') || allText.includes('worry')) {
+      exercises.push({
+        id: 'thought-challenge-1',
+        title: 'Challenge Unhelpful Thoughts',
+        type: 'cognitive',
+        description: 'Question and reframe negative or unhelpful thinking patterns',
+        steps: [
+          'Notice the unhelpful thought',
+          'Write it down exactly as it occurred',
+          'Ask: What evidence supports this thought?',
+          'Ask: What evidence contradicts this thought?',
+          'Create a more balanced perspective'
+        ],
+        timeEstimate: '5-10 minutes',
+        difficulty: 'beginner'
+      });
+    }
+    
+    return exercises.slice(0, 3);
+  };
+
+  const assessCurrentEmotionalState = (history: any[]): string => {
+    if (history.length === 0) return 'neutral';
+    
+    const recentMessages = history.slice(-3);
+    const recentText = recentMessages.map(msg => msg.content || '').join(' ').toLowerCase();
+    
+    if (recentText.includes('happy') || recentText.includes('good')) return 'positive';
+    if (recentText.includes('sad') || recentText.includes('down')) return 'low';
+    if (recentText.includes('stress') || recentText.includes('overwhelm')) return 'stressed';
+    if (recentText.includes('angry') || recentText.includes('frustrated')) return 'agitated';
+    
+    return 'neutral';
+  };
+
+  const createCustomizedApproach = (profile: any): string => {
+    if (!profile || Object.keys(profile).length === 0) {
+      return 'As I learn more about your unique patterns, I\'ll customize this approach specifically for you.';
+    }
+    
+    const communication = profile.communicationStyle || 'balanced';
+    
+    if (communication === 'analytical_explorer') {
+      return 'Your analytical nature responds well to structured approaches with clear steps and logical frameworks.';
+    } else if (communication === 'collaborative_detailed') {
+      return 'You benefit from collaborative exploration with detailed discussion and multiple perspectives.';
+    } else {
+      return 'Your balanced communication style allows for flexible approaches tailored to each situation.';
+    }
+  };
   const handleCompleteExercise = (exerciseId: string) => {
     setCompletedExercises(prev => [...prev, exerciseId]);
     
