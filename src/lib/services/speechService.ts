@@ -102,7 +102,13 @@ class SpeechService {
       };
       
       utterance.onerror = (event) => {
-        reject(new Error(`Speech synthesis failed: ${event.error}`));
+        // 'interrupted' is expected when cancelling speech, not an error
+        if (event.error === 'interrupted') {
+          options.onEnd?.();
+          resolve();
+        } else {
+          reject(new Error(`Speech synthesis failed: ${event.error}`));
+        }
       };
 
       this.synthesis.speak(utterance);
