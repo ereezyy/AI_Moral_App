@@ -1,3 +1,4 @@
+import { ErrorHandler } from '../utils/error/errorHandler';
 interface MoralAnalysisRequest {
   situation: string;
   context: {
@@ -46,19 +47,19 @@ class AIService {
   }
 
   async analyzeMoralSituation(request: MoralAnalysisRequest): Promise<AIResponse> {
-    try {
-      // Try Gemini first, fallback to XAI, then mock
-      if (this.geminiApiKey) {
-        return await this.analyzeWithGemini(request);
-      } else if (this.xaiApiKey) {
-        return await this.analyzeWithXAI(request);
-      } else {
-        return this.getFallbackResponse(request);
-      }
-    } catch (error) {
-      console.error('AI Analysis failed, using fallback:', error);
-      return this.getFallbackResponse(request);
-    }
+    return await ErrorHandler.withErrorHandling(
+      async () => {
+        if (this.geminiApiKey) {
+          return await this.analyzeWithGemini(request);
+        } else if (this.xaiApiKey) {
+          return await this.analyzeWithXAI(request);
+        } else {
+          return this.getFallbackResponse(request);
+        }
+      },
+      'AI moral analysis',
+      this.getFallbackResponse(request)
+    ) || this.getFallbackResponse(request);
   }
 
   private async analyzeWithGemini(request: MoralAnalysisRequest): Promise<AIResponse> {
@@ -89,7 +90,9 @@ class AIService {
     }
 
     const data = await response.json();
-    return this.parseGeminiResponse(data.candidates[0].content.parts[0].text);
+    return this.convertToAIResponse(
+      ResponseParser.parseAIResponse(data.candidates[0].content.parts[0].text)
+    );
   }
 
   private async analyzeWithXAI(request: MoralAnalysisRequest): Promise<AIResponse> {
@@ -123,7 +126,9 @@ class AIService {
     }
 
     const data = await response.json();
-    return this.parseXAIResponse(data.choices[0].message.content);
+    return this.convertToAIResponse(
+      ResponseParser.parseAIResponse(data.choices[0].message.content)
+    );
   }
 
   private buildMoralAnalysisPrompt(request: MoralAnalysisRequest): string {
@@ -176,72 +181,22 @@ Respond in JSON format with these exact fields:
     `;
   }
 
-  private parseGeminiResponse(text: string): AIResponse {
-    try {
-      // Try to extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        // Clean the JSON string before parsing
-        let cleanedJson = jsonMatch[0];
-        
-        // Remove comments (// and /* */)
-        cleanedJson = cleanedJson.replace(/\/\*[\s\S]*?\*\//g, '');
-        cleanedJson = cleanedJson.replace(/\/\/.*$/gm, '');
-        
-        // Remove trailing commas before closing brackets/braces
-        cleanedJson = cleanedJson.replace(/,(\s*[}\]])/g, '$1');
-        
-        // Remove any remaining whitespace issues
-        cleanedJson = cleanedJson.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-        
-        return JSON.parse(cleanedJson);
-      }
-    } catch (error) {
-      console.error('Failed to parse Gemini response as JSON:', error);
-    }
-    
-    // Fallback to text parsing
-    return this.parseTextResponse(text);
-  }
-
-  private parseXAIResponse(text: string): AIResponse {
-    try {
-      // Clean the JSON string before parsing
-      let cleanedJson = text;
-      
-      // Remove comments (// and /* */)
-      cleanedJson = cleanedJson.replace(/\/\*[\s\S]*?\*\//g, '');
-      cleanedJson = cleanedJson.replace(/\/\/.*$/gm, '');
-      
-      // Remove trailing commas before closing brackets/braces
-      cleanedJson = cleanedJson.replace(/,(\s*[}\]])/g, '$1');
-      
-      // Remove any remaining whitespace issues
-      cleanedJson = cleanedJson.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-      
-      return JSON.parse(cleanedJson);
-    } catch (error) {
-      console.error('Failed to parse XAI response as JSON:', error);
-      return this.parseTextResponse(text);
-    }
-  }
-
-  private parseTextResponse(text: string): AIResponse {
-    // Intelligent text parsing fallback
+  private convertToAIResponse(parsedResponse: any): AIResponse {
     return {
-      ethicalAlignment: this.extractEthicalScore(text),
-      conflictingValues: this.extractConflicts(text),
+      ethicalAlignment: this.extractEthicalScore(parsedResponse.text),
+      conflictingValues: this.extractConflicts(parsedResponse.text),
       potentialConsequences: {
-        shortTerm: this.extractConsequences(text, 'short'),
-        longTerm: this.extractConsequences(text, 'long')
+        shortTerm: parsedResponse.predictions || ['immediate_considerations'],
+        longTerm: parsedResponse.growthOpportunities || ['long_term_development']
       },
-      recommendedActions: this.extractRecommendations(text),
-      moralPrinciples: this.extractPrinciples(text),
-      reasoning: text
+      recommendedActions: parsedResponse.suggestions || ['seek_additional_guidance'],
+      moralPrinciples: this.extractPrinciples(parsedResponse.text),
+      reasoning: parsedResponse.text
     };
   }
 
   private extractEthicalScore(text: string): number {
+    // Intelligent text parsing fallback
     const scoreMatch = text.match(/(?:score|alignment|rating).*?(\d+(?:\.\d+)?)/i);
     if (scoreMatch) {
       const score = parseFloat(scoreMatch[1]);
@@ -259,32 +214,6 @@ Respond in JSON format with these exact fields:
       conflicts.push('individual_vs_collective_good');
     }
     return conflicts.length ? conflicts : ['competing_moral_values'];
-  }
-
-  private extractConsequences(text: string, timeframe: 'short' | 'long'): string[] {
-    const keywords = timeframe === 'short' 
-      ? ['immediate', 'short-term', 'instant', 'direct']
-      : ['long-term', 'future', 'lasting', 'eventual'];
-    
-    const consequences = [];
-    if (keywords.some(kw => text.toLowerCase().includes(kw))) {
-      consequences.push(`${timeframe}_term_impact_identified`);
-    }
-    return consequences.length ? consequences : [`${timeframe}_term_considerations`];
-  }
-
-  private extractRecommendations(text: string): string[] {
-    const recommendations = [];
-    if (text.toLowerCase().includes('consider')) {
-      recommendations.push('Consider all stakeholder perspectives');
-    }
-    if (text.toLowerCase().includes('communicate') || text.toLowerCase().includes('discuss')) {
-      recommendations.push('Engage in open communication');
-    }
-    if (text.toLowerCase().includes('reflect') || text.toLowerCase().includes('think')) {
-      recommendations.push('Take time for reflection');
-    }
-    return recommendations.length ? recommendations : ['Seek additional ethical guidance'];
   }
 
   private extractPrinciples(text: string): Array<{ principle: string; relevance: number }> {
@@ -333,4 +262,5 @@ Respond in JSON format with these exact fields:
   }
 }
 
+import { ResponseParser } from '../utils/responseParser';
 export const aiService = AIService.getInstance();

@@ -1,8 +1,8 @@
 import { aiService } from './aiService';
 import { conversationService } from './conversationService';
-import { speechService } from './speechService';
-import { advancedPsychologyService } from './advancedPsychologyService';
-import { realTimeCoachingService } from './realTimeCoachingService';
+import { ConversationAnalyzer } from './conversationAnalyzer';
+import { ErrorHandler } from '../utils/error/errorHandler';
+import { TextAnalyzer } from '../utils/textAnalysis';
 import type { VideoAnalysis, AudioAnalysis, SituationalContext } from '../types';
 
 interface LifePartnerResponse {
@@ -40,136 +40,32 @@ class EnhancedAIService {
     audioAnalysis: AudioAnalysis | null,
     situationalContext?: Partial<SituationalContext>
   ): Promise<LifePartnerResponse> {
-    // Build comprehensive psychological profile
-    const userProfile = conversationService.getUserProfile();
-    const conversationHistory = conversationService.getConversationHistory(30);
-    
-    const psychProfile = await advancedPsychologyService.buildComprehensivePsychologicalProfile(
-      conversationHistory, videoAnalysis, audioAnalysis
-    );
+    return await ErrorHandler.withErrorHandling(
+      async () => {
+        const conversationHistory = conversationService.getConversationHistory(10);
+        const conversationPatterns = ConversationAnalyzer.analyzeConversationHistory(conversationHistory);
+        const userProfile = ConversationAnalyzer.extractUserProfile(conversationPatterns);
 
-    // Get advanced coaching guidance
-    const coachingGuidance = await realTimeCoachingService.provideAdvancedGuidance(
-      userInput, videoAnalysis, audioAnalysis, { psychProfile, userProfile }
-    );
+        const enhancedPrompt = this.buildEnhancedPrompt(
+          userInput,
+          videoAnalysis,
+          audioAnalysis,
+          userProfile,
+          conversationPatterns
+        );
 
-    // Analyze patterns with new advanced capabilities
-    const behavioralPatterns = this.analyzeAdvancedBehavioralPatterns(psychProfile);
-    const emotionalTrends = this.analyzeAdvancedEmotionalTrends(psychProfile, videoAnalysis, audioAnalysis);
-    const riskAssessment = this.assessAdvancedRisk(userInput, psychProfile, coachingGuidance.crisisAssessment);
-    const predictionModel = this.generateAdvancedPredictiveInsights(psychProfile, coachingGuidance);
+        const response = await aiService.analyzeMoralSituation({
+          situation: enhancedPrompt,
+          context: this.buildAnalysisContext(videoAnalysis, audioAnalysis, situationalContext)
+        });
 
-    // Add user message to conversation memory
-    conversationService.addMessage('user', userInput, {
-      emotional: videoAnalysis?.facialExpression,
-      environmental: videoAnalysis?.environmentalContext,
-      psychological: psychProfile,
-      analysis: { 
-        video: videoAnalysis, 
-        audio: audioAnalysis,
-        behavioral: behavioralPatterns,
-        emotional: emotionalTrends,
-        risk: riskAssessment,
-        predictions: predictionModel
-      }
-    });
-
-    // Create enhanced prompt with conversation context
-    const contextualPrompt = conversationService.getContextualPrompt();
-    const environmentalContext = this.buildEnvironmentalContext(videoAnalysis, audioAnalysis);
-    const psychologicalContext = this.buildPsychologicalContext(psychProfile);
-    const coachingContext = this.buildCoachingContext(coachingGuidance);
-    
-    const enhancedPrompt = `
-${contextualPrompt}
-
-COMPREHENSIVE PSYCHOLOGICAL PROFILE:
-${psychologicalContext}
-
-REAL-TIME COACHING ANALYSIS:
-${coachingContext}
-
-CURRENT ENVIRONMENT ANALYSIS:
-${environmentalContext}
-
-ADVANCED BEHAVIORAL & PREDICTIVE ANALYSIS:
-${this.buildAdvancedBehavioralAnalysis(behavioralPatterns, emotionalTrends, riskAssessment, predictionModel)}
-
-CURRENT USER INPUT: "${userInput}"
-
-You are an advanced AI life partner with PhD-level psychological expertise and sophisticated coaching abilities.
-
-ADVANCED CAPABILITIES:
-- Analyze micro-expressions and subtle behavioral cues
-- Comprehensive personality assessment and cognitive bias detection
-- Real-time coaching interventions and skill development
-- Crisis assessment and intervention capabilities
-- Advanced predictive modeling for decision outcomes
-- Sophisticated emotional regulation and cognitive reframing techniques
-- Behavioral experiment design and implementation
-- Deep psychological pattern recognition and therapeutic insights
-- Attachment style analysis and relationship coaching
-- Personalized growth trajectory optimization
-
-Use advanced therapeutic techniques including CBT, DBT, ACT, and positive psychology approaches.
-Provide psychologically sophisticated insights that go far beyond surface-level advice.
-Be highly personalized based on the user's unique psychological profile.
-Address both immediate needs and long-term psychological development.
-
-CRITICAL: If crisis indicators are present (risk level high/crisis), prioritize safety and provide crisis resources.
-
-Provide your response in this JSON format:
-{
-  "text": "Your PhD-level psychological response with therapeutic insights",
-  "emotion": "supportive|encouraging|concerned|excited|thoughtful",
-  "priority": "low|medium|high|urgent|critical", 
-  "suggestions": ["psychological insight-based suggestion 1", "behavioral change suggestion 2", "growth opportunity suggestion 3"],
-  "followUpQuestions": ["deep psychological question 1", "pattern recognition question 2"],
-  "predictions": ["likely outcome 1", "potential challenge 2", "opportunity for growth 3"],
-  "riskFactors": ["psychological risk 1", "behavioral risk 2"],
-  "growthOpportunities": ["personal development area 1", "strength to leverage 2"],
-  "psychologicalInsights": ["personality insight 1", "cognitive bias observation 2", "attachment pattern 3"],
-  "coachingInterventions": ["immediate intervention 1", "skill building opportunity 2"],
-  "skillDevelopment": ["emotional regulation technique 1", "communication skill 2"],
-  "cognitiveReframes": ["thought challenging exercise 1", "reframing opportunity 2"],
-  "behavioralSuggestions": ["behavioral experiment 1", "habit change 2"],
-  "crisisSupport": ["safety resource 1", "support contact 2"] (only if crisis detected)
-}
-`;
-
-    try {
-      const response = await aiService.analyzeMoralSituation({
-        situation: enhancedPrompt,
-        context: {
-          emotional: videoAnalysis?.facialExpression || {},
-          environmental: videoAnalysis?.environmentalContext || [],
-          social: situationalContext?.socialContext || {
-            numberOfPeople: 1,
-            relationshipTypes: ['self'],
-            socialPressure: 0.2
-          }
-        }
-      });
-
-      // Try to parse as JSON, fallback to text parsing
-      const lifePartnerResponse = this.parseLifePartnerResponse(response.reasoning);
-      
-      // Add assistant response to conversation memory
-      conversationService.addMessage('assistant', lifePartnerResponse.text, {
-        emotional: videoAnalysis?.facialExpression,
-        environmental: videoAnalysis?.environmentalContext,
-        psychological: psychProfile,
-        coaching: coachingGuidance
-      });
-
-      return lifePartnerResponse;
-    } catch (error) {
-      console.error('Enhanced AI analysis failed:', error);
-      return this.getAdvancedFallbackResponse(userInput, videoAnalysis, psychProfile);
-    }
+        return this.createLifePartnerResponse(response, userInput, videoAnalysis, userProfile);
+      },
+      'Enhanced AI life context analysis',
+      this.getBasicFallbackResponse(userInput, videoAnalysis)
+    ) || this.getBasicFallbackResponse(userInput, videoAnalysis);
   }
 
-  private buildPsychologicalContext(psychProfile: any): string {
     return `
 PERSONALITY PROFILE:
 Big Five: O:${(psychProfile.personality?.bigFive.openness * 100).toFixed(0)}% C:${(psychProfile.personality?.bigFive.conscientiousness * 100).toFixed(0)}% E:${(psychProfile.personality?.bigFive.extraversion * 100).toFixed(0)}% A:${(psychProfile.personality?.bigFive.agreeableness * 100).toFixed(0)}% N:${(psychProfile.personality?.bigFive.neuroticism * 100).toFixed(0)}%
