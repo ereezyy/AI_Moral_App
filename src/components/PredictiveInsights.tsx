@@ -1,8 +1,8 @@
 import { aiService } from '../lib/services/aiService';
 import { conversationService } from '../lib/services/conversationService';
 import { ConversationAnalyzer } from '../lib/services/conversationAnalyzer';
-import { ErrorHandler } from '../utils/error/errorHandler';
-import { TextAnalyzer } from '../utils/textAnalysis';
+import { ErrorHandler } from '../lib/utils/error/errorHandler';
+import { TextAnalyzer } from '../lib/utils/textAnalysis';
 import type { VideoAnalysis, AudioAnalysis, SituationalContext } from '../types';
 
 interface LifePartnerResponse {
