@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MessageSquare, Mic, MicOff, Volume2, VolumeX, Heart, Brain, Sparkles, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { enhancedAIService } from '../lib/services/enhancedAiService';
+import { multidimensionalAIService } from '../lib/services/multidimensionalAIService';
 import { speechService } from '../lib/services/speechService';
 import { conversationService } from '../lib/services/conversationService';
 import type { VideoAnalysis, AudioAnalysis } from '../types/analysis';
@@ -17,6 +17,13 @@ interface Message {
   predictions?: string[];
   riskFactors?: string[];
   growthOpportunities?: string[];
+  psychologicalInsights?: string[];
+  soulGuidance?: string;
+  cosmicPerspective?: string;
+  transcendentWisdom?: string;
+  quantumInsights?: string[];
+  emergentPossibilities?: string[];
+  multidimensionalLevel?: 'human' | 'soul' | 'cosmic' | 'transcendent' | 'quantum';
 }
 
 interface LifePartnerInterfaceProps {
@@ -94,32 +101,44 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
 
     try {
       // Get AI response with full context
-      const response = await enhancedAIService.analyzeLifeContext(
+      const multidimensionalResponse = await multidimensionalAIService.generateMultidimensionalGuidance(
         text,
         videoAnalysis,
         audioAnalysis
       );
 
-      // Add AI response
+      // Synthesize multidimensional response into conversational format
+      const synthesizedResponse = this.synthesizeIntoConversation(multidimensionalResponse, text);
+      
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         type: 'assistant',
-        content: response.text,
+        content: synthesizedResponse.text,
         timestamp: Date.now(),
-        emotion: response.emotion,
-        suggestions: response.suggestions,
-        followUpQuestions: response.followUpQuestions,
-        predictions: response.predictions,
-        riskFactors: response.riskFactors,
-        growthOpportunities: response.growthOpportunities
+        emotion: synthesizedResponse.emotion,
+        suggestions: synthesizedResponse.suggestions,
+        followUpQuestions: synthesizedResponse.followUpQuestions,
+        predictions: synthesizedResponse.predictions,
+        riskFactors: synthesizedResponse.riskFactors,
+        growthOpportunities: synthesizedResponse.growthOpportunities,
+        psychologicalInsights: synthesizedResponse.psychologicalInsights,
+        soulGuidance: synthesizedResponse.soulGuidance,
+        cosmicPerspective: synthesizedResponse.cosmicPerspective,
+        transcendentWisdom: synthesizedResponse.transcendentWisdom,
+        quantumInsights: synthesizedResponse.quantumInsights,
+        emergentPossibilities: synthesizedResponse.emergentPossibilities,
+        multidimensionalLevel: this.selectOptimalResponseLevel(multidimensionalResponse)
       };
       
       setMessages(prev => [...prev, assistantMessage]);
 
       // Speak response if voice is enabled
-      if (voiceEnabled && response.text) {
+      if (voiceEnabled && synthesizedResponse.text) {
         setIsSpeaking(true);
-        await enhancedAIService.speakResponse(response);
+        await speechService.speak(synthesizedResponse.text, {
+          rate: synthesizedResponse.emotion === 'excited' ? 1.1 : 0.9,
+          pitch: synthesizedResponse.emotion === 'supportive' ? 1.0 : 1.1
+        });
         setIsSpeaking(false);
       }
 
@@ -180,6 +199,84 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
     }
     setVoiceEnabled(prev => !prev);
   }, [isSpeaking]);
+
+  const synthesizeIntoConversation = useCallback((multidimensionalResponse: any, userInput: string) => {
+    // Intelligently synthesize multidimensional response into natural conversation
+    const level = this.selectOptimalResponseLevel(multidimensionalResponse);
+    
+    let mainResponse = '';
+    let emotion: Message['emotion'] = 'supportive';
+    let suggestions: string[] = [];
+    let followUpQuestions: string[] = [];
+    
+    switch (level) {
+      case 'human':
+        mainResponse = multidimensionalResponse.humanLevel.emotional + ' ' + multidimensionalResponse.humanLevel.psychological;
+        suggestions = multidimensionalResponse.humanLevel.support.slice(0, 3);
+        followUpQuestions = ['How does this feel for you?', 'What resonates most?'];
+        emotion = 'supportive';
+        break;
+        
+      case 'soul':
+        mainResponse = multidimensionalResponse.soulLevel.soulPerspective + ' ' + multidimensionalResponse.soulLevel.purposeGuidance;
+        suggestions = multidimensionalResponse.soulLevel.soulLessons.slice(0, 3);
+        followUpQuestions = ['What is your soul calling you toward?', 'How can you honor your authentic truth?'];
+        emotion = 'thoughtful';
+        break;
+        
+      case 'cosmic':
+        mainResponse = multidimensionalResponse.cosmicLevel.universalPerspective + ' ' + multidimensionalResponse.cosmicLevel.divineGuidance;
+        suggestions = [multidimensionalResponse.cosmicLevel.energeticAlignment];
+        followUpQuestions = ['How do you sense the cosmic support around you?'];
+        emotion = 'excited';
+        break;
+        
+      case 'transcendent':
+        mainResponse = multidimensionalResponse.transcendentWisdom.paradoxResolution + ' ' + multidimensionalResponse.transcendentWisdom.unityConsciousness;
+        suggestions = [multidimensionalResponse.transcendentWisdom.transcendentAction];
+        followUpQuestions = ['How can you embody this transcendent wisdom?'];
+        emotion = 'thoughtful';
+        break;
+        
+      case 'quantum':
+        mainResponse = multidimensionalResponse.quantumGuidance.probabilityCollapse + ' ' + multidimensionalResponse.quantumGuidance.timelineOptimization;
+        suggestions = [multidimensionalResponse.quantumGuidance.coherenceAmplification];
+        followUpQuestions = ['What timeline do you choose to activate?'];
+        emotion = 'excited';
+        break;
+    }
+    
+    return {
+      text: mainResponse,
+      emotion,
+      suggestions,
+      followUpQuestions,
+      predictions: multidimensionalResponse.emergentPossibilities.evolutionaryOpportunities,
+      riskFactors: [], // Minimize negative focus
+      growthOpportunities: multidimensionalResponse.emergentPossibilities.newPotentials,
+      psychologicalInsights: [multidimensionalResponse.humanLevel.psychological],
+      soulGuidance: multidimensionalResponse.soulLevel.evolution,
+      cosmicPerspective: multidimensionalResponse.cosmicLevel.cosmicPurpose,
+      transcendentWisdom: multidimensionalResponse.transcendentWisdom.compassionateService,
+      quantumInsights: [multidimensionalResponse.quantumGuidance.potentialActivation],
+      emergentPossibilities: multidimensionalResponse.emergentPossibilities.consciousnessExpansions
+    };
+  }, []);
+
+  const selectOptimalResponseLevel = useCallback((response: any): Message['multidimensionalLevel'] => {
+    // Intelligent level selection based on user readiness and context
+    const conversationHistory = conversationService.getConversationHistory(10);
+    const spiritualWords = ['soul', 'spiritual', 'transcendent', 'cosmic', 'divine', 'consciousness'];
+    const spiritualFrequency = spiritualWords.filter(word => 
+      conversationHistory.some(msg => msg.content?.toLowerCase().includes(word))
+    ).length;
+    
+    if (spiritualFrequency > 5) return 'quantum';
+    if (spiritualFrequency > 3) return 'transcendent';
+    if (spiritualFrequency > 2) return 'cosmic';
+    if (spiritualFrequency > 1) return 'soul';
+    return 'human';
+  }, []);
 
   const handleQuickResponse = useCallback((text: string) => {
     setInput(text);
@@ -344,6 +441,81 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                         {opportunity}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Soul Guidance */}
+                {message.type === 'assistant' && message.soulGuidance && (
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-purple-600 mb-1">🕉️ Soul Wisdom</div>
+                    <div className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded border-l-2 border-purple-300">
+                      {message.soulGuidance}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cosmic Perspective */}
+                {message.type === 'assistant' && message.cosmicPerspective && (
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-indigo-600 mb-1">🌌 Cosmic View</div>
+                    <div className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded border-l-2 border-indigo-300">
+                      {message.cosmicPerspective}
+                    </div>
+                  </div>
+                )}
+
+                {/* Transcendent Wisdom */}
+                {message.type === 'assistant' && message.transcendentWisdom && (
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-yellow-600 mb-1">✨ Transcendent Wisdom</div>
+                    <div className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border-l-2 border-yellow-300">
+                      {message.transcendentWisdom}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantum Insights */}
+                {message.type === 'assistant' && message.quantumInsights && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-cyan-600 mb-1">🔮 Quantum Intelligence</div>
+                    {message.quantumInsights.slice(0, 2).map((insight, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs bg-cyan-50 text-cyan-700 px-2 py-1 rounded border-l-2 border-cyan-300"
+                      >
+                        {insight}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Emergent Possibilities */}
+                {message.type === 'assistant' && message.emergentPossibilities && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-pink-600 mb-1">🚀 Emergent Possibilities</div>
+                    {message.emergentPossibilities.slice(0, 2).map((possibility, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded border-l-2 border-pink-300"
+                      >
+                        {possibility}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Multidimensional Level Indicator */}
+                {message.type === 'assistant' && message.multidimensionalLevel && (
+                  <div className="mt-2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      message.multidimensionalLevel === 'quantum' ? 'bg-cyan-100 text-cyan-700' :
+                      message.multidimensionalLevel === 'transcendent' ? 'bg-yellow-100 text-yellow-700' :
+                      message.multidimensionalLevel === 'cosmic' ? 'bg-indigo-100 text-indigo-700' :
+                      message.multidimensionalLevel === 'soul' ? 'bg-purple-100 text-purple-700' :
+                      'bg-blue-100 text-blue-700'
+                    }`}>
+                      {message.multidimensionalLevel.toUpperCase()} LEVEL
+                    </span>
                   </div>
                 )}
               </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain } from 'lucide-react';
+import { Brain, Sparkles } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { ErrorBoundaryProvider } from './lib/providers';
 

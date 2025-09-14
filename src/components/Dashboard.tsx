@@ -10,6 +10,9 @@ import { EnhancedRealtimeAlerts } from './EnhancedRealtimeAlerts';
 import { PredictiveInsights } from './PredictiveInsights';
 import { PsychologicalProfile } from './PsychologicalProfile';
 import { AdvancedCoachingPanel } from './AdvancedCoachingPanel';
+import { HolisticLifeDashboard } from './HolisticLifeDashboard';
+import { QuantumConsciousnessPanel } from './QuantumConsciousnessPanel';
+import { MultidimensionalInsights } from './MultidimensionalInsights';
 import { VideoAnalysis, AudioAnalysis } from '../types/analysis';
 
 export function Dashboard() {
@@ -76,6 +79,18 @@ export function Dashboard() {
             audioAnalysis={audioAnalysis}
           />
           <PsychologicalProfile 
+            videoAnalysis={videoAnalysis}
+            audioAnalysis={audioAnalysis}
+          />
+          <HolisticLifeDashboard 
+            videoAnalysis={videoAnalysis}
+            audioAnalysis={audioAnalysis}
+          />
+          <QuantumConsciousnessPanel 
+            videoAnalysis={videoAnalysis}
+            audioAnalysis={audioAnalysis}
+          />
+          <MultidimensionalInsights 
             videoAnalysis={videoAnalysis}
             audioAnalysis={audioAnalysis}
           />
