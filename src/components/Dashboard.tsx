@@ -43,16 +43,16 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg shadow-lg p-6 border border-indigo-100">
+          <div className="bg-muted rounded-lg shadow-theme-lg p-6 border border-border">
             <div className="flex items-center gap-2 mb-4">
-              <Heart className="w-6 h-6 text-indigo-600" />
-              <h2 className="text-xl font-semibold text-indigo-800">Life Goals</h2>
+              <Heart className="w-6 h-6 text-primary" />
+              <h2 className="text-xl font-semibold text-foreground">Life Goals</h2>
             </div>
             <div className="space-y-4">
               {Object.entries(dailyGoals).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center p-3 bg-white/60 rounded-lg border border-indigo-100">
-                  <span className="capitalize font-medium">{key.replace(/([A-Z])/g, ' $1')}</span>
-                  <span className="text-indigo-600 font-semibold">{value} minutes</span>
+                <div key={key} className="flex justify-between items-center p-3 bg-background rounded-lg border border-border">
+                  <span className="capitalize font-medium text-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
+                  <span className="text-primary font-semibold">{value} minutes</span>
                 </div>
               ))}
             </div>

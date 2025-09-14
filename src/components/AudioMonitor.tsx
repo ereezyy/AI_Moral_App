@@ -17,23 +17,23 @@ export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
   } = useAudioMonitoring(onAnalysis);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-background rounded-lg shadow-theme-lg p-6 border border-border">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {isMonitoring ? (
-            <Mic className="w-6 h-6 text-green-500 animate-pulse" />
+            <Mic className="w-6 h-6 text-success animate-pulse" />
           ) : (
-            <MicOff className="w-6 h-6 text-gray-400" />
+            <MicOff className="w-6 h-6 text-muted-foreground" />
           )}
-          <h2 className="text-xl font-semibold">Audio Monitor</h2>
+          <h2 className="text-xl font-semibold text-foreground">Audio Monitor</h2>
         </div>
         
         <button
           onClick={isMonitoring ? stopMonitoring : startMonitoring}
           className={`px-4 py-2 rounded-md ${
             isMonitoring 
-              ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-              : 'bg-green-100 text-green-600 hover:bg-green-200'
+              ? 'bg-error/10 text-error hover:bg-error/20' 
+              : 'bg-success/10 text-success hover:bg-success/20'
           }`}
         >
           {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
@@ -41,7 +41,7 @@ export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md flex items-center gap-2">
+        <div className="mb-4 p-3 bg-error/10 text-error rounded-md flex items-center gap-2 border border-error/20">
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
         </div>
@@ -50,11 +50,11 @@ export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
       {isMonitoring && currentAnalysis && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Volume2 className="w-5 h-5 text-indigo-600" />
+            <Volume2 className="w-5 h-5 text-primary" />
             <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded-full">
+              <div className="h-2 bg-muted rounded-full">
                 <div 
-                  className="h-2 bg-indigo-600 rounded-full transition-all duration-200"
+                  className="h-2 bg-primary rounded-full transition-all duration-200"
                   style={{ width: `${currentAnalysis.volume * 100}%` }}
                 />
               </div>
@@ -62,27 +62,27 @@ export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-indigo-50 rounded-md">
-              <span className="text-sm text-gray-600">Clarity</span>
-              <div className="text-lg font-semibold">
+            <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
+              <span className="text-sm text-muted-foreground">Clarity</span>
+              <div className="text-lg font-semibold text-foreground">
                 {(currentAnalysis.clarity * 100).toFixed(0)}%
               </div>
             </div>
-            <div className="p-3 bg-gray-50 rounded-md">
-              <span className="text-sm text-gray-600">Sentiment</span>
-              <div className="text-lg font-semibold">
+            <div className="p-3 bg-muted rounded-md border border-border">
+              <span className="text-sm text-muted-foreground">Sentiment</span>
+              <div className="text-lg font-semibold text-foreground">
                 {(currentAnalysis.sentiment * 100).toFixed(0)}%
               </div>
             </div>
           </div>
 
-          <div className="p-4 bg-purple-50 rounded-md border border-purple-100">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Emotional Tone</h3>
+          <div className="p-4 bg-accent rounded-md border border-border">
+            <h3 className="text-sm font-medium text-foreground mb-2">Emotional Tone</h3>
             <div className="grid grid-cols-3 gap-2">
               {Object.entries(currentAnalysis.emotionalTone).map(([emotion, value]) => (
                 <div key={emotion} className="text-center">
-                  <div className="text-xs text-gray-600 capitalize">{emotion}</div>
-                  <div className="font-medium">{(value * 100).toFixed(0)}%</div>
+                  <div className="text-xs text-muted-foreground capitalize">{emotion}</div>
+                  <div className="font-medium text-foreground">{(value * 100).toFixed(0)}%</div>
                 </div>
               ))}
             </div>

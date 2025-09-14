@@ -141,11 +141,11 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-background rounded-lg shadow-theme-lg p-6 border border-border">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Camera className="w-6 h-6 text-indigo-600" />
-          <h2 className="text-xl font-semibold">Video Analysis</h2>
+          <Camera className="w-6 h-6 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">Video Analysis</h2>
         </div>
         <div className={`flex items-center gap-2 ${getStatusColor()}`}>
           {getStatusIcon()}
@@ -158,7 +158,7 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
       </div>
 
       <div className="relative">
-        <div className="rounded-lg overflow-hidden bg-gray-900 relative">
+        <div className="rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-800 relative">
           <video
             ref={videoRef}
             autoPlay
@@ -178,12 +178,12 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
 
           {/* Loading overlay */}
           {isInitializing && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/70">
-              <div className="bg-white p-4 rounded-lg flex items-center gap-3">
-                <Activity className="w-6 h-6 text-indigo-600 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/70 dark:bg-gray-800/70">
+              <div className="bg-background p-4 rounded-lg flex items-center gap-3 border border-border">
+                <Activity className="w-6 h-6 text-primary animate-spin" />
                 <div>
-                  <div className="font-medium">Initializing AI Models</div>
-                  <div className="text-sm text-gray-600">Loading face detection...</div>
+                  <div className="font-medium text-foreground">Initializing AI Models</div>
+                  <div className="text-sm text-muted-foreground">Loading face detection...</div>
                 </div>
               </div>
             </div>
@@ -191,16 +191,16 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
 
           {/* Error overlay */}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/70">
-              <div className="bg-white p-4 rounded-lg max-w-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/70 dark:bg-gray-800/70">
+              <div className="bg-background p-4 rounded-lg max-w-sm border border-border">
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="w-6 h-6 text-red-500" />
-                  <span className="font-medium text-red-700">Setup Failed</span>
+                  <AlertCircle className="w-6 h-6 text-error" />
+                  <span className="font-medium text-error">Setup Failed</span>
                 </div>
-                <p className="text-sm text-gray-700">{error}</p>
+                <p className="text-sm text-foreground">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="mt-3 px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+                  className="mt-3 px-3 py-1 bg-primary text-primary-foreground text-sm rounded hover:opacity-90 transition-opacity"
                 >
                   Retry
                 </button>
@@ -213,24 +213,24 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
         {isAnalyzing && !error && (
           <div className="mt-4 grid grid-cols-2 gap-4">
             {/* Performance metrics */}
-            <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="p-3 bg-muted rounded-lg border border-border">
               <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium">Performance</span>
+                <Zap className="w-4 h-4 text-success" />
+                <span className="text-sm font-medium text-foreground">Performance</span>
               </div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Avg: {performanceInfo.avgTime}ms | Total: {performanceInfo.totalAnalyses}
               </div>
             </div>
 
             {/* Last analysis preview */}
             {lastAnalysis && (
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-muted rounded-lg border border-border">
                 <div className="flex items-center gap-2 mb-1">
-                  <Eye className="w-4 h-4 text-indigo-600" />
-                  <span className="text-sm font-medium">Detection</span>
+                  <Eye className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Detection</span>
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-muted-foreground">
                   Attention: {Math.round(lastAnalysis.attentiveness * 100)}% | 
                   Joy: {Math.round(lastAnalysis.facialExpression.joy * 100)}%
                 </div>

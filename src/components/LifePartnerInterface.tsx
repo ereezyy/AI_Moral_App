@@ -252,17 +252,17 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[600px] flex flex-col">
+    <div className="bg-background rounded-lg shadow-theme-lg overflow-hidden h-[600px] flex flex-col border border-border">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4">
+      <div className="bg-primary text-primary-foreground p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
               <Heart className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Your AI Life Partner</h2>
-              <p className="text-sm text-indigo-100">
+              <h2 className="text-lg font-semibold text-primary-foreground">Your AI Life Partner</h2>
+              <p className="text-sm text-primary-foreground/80">
                 {isProcessing ? 'Thinking...' : isSpeaking ? 'Speaking...' : 'Ready to help'}
               </p>
             </div>
@@ -272,7 +272,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
             <button
               onClick={toggleVoice}
               className={`p-2 rounded-full transition-colors ${
-                voiceEnabled ? 'bg-white/20' : 'bg-white/10'
+                voiceEnabled ? 'bg-primary-foreground/20' : 'bg-primary-foreground/10'
               }`}
             >
               {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
@@ -294,17 +294,17 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
               <div className={`max-w-[80%] ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
                 {message.type === 'assistant' && (
                   <div className="flex items-center gap-2 mb-1">
-                    <div className={`w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center ${getEmotionColor(message.emotion)}`}>
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                       {getEmotionIcon(message.emotion)}
                     </div>
-                    <span className="text-xs text-gray-500">AI Partner</span>
+                    <span className="text-xs text-muted-foreground">AI Partner</span>
                   </div>
                 )}
                 
                 <div className={`p-3 rounded-lg ${
                   message.type === 'user' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-foreground'
                 }`}>
                   <p className="whitespace-pre-wrap">{message.content}</p>
                   
@@ -322,7 +322,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                       <button
                         key={idx}
                         onClick={() => handleQuickResponse(suggestion)}
-                        className="block w-full text-left text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-100 transition-colors"
+                        className="block w-full text-left text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20 transition-colors"
                       >
                         💡 {suggestion}
                       </button>
@@ -337,7 +337,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                       <button
                         key={idx}
                         onClick={() => handleQuickResponse(question)}
-                        className="block w-full text-left text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded hover:bg-purple-100 transition-colors"
+                        className="block w-full text-left text-xs bg-accent text-accent-foreground px-2 py-1 rounded hover:bg-accent/80 transition-colors"
                       >
                         ❓ {question}
                       </button>
@@ -348,11 +348,11 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                 {/* Predictions */}
                 {message.type === 'assistant' && message.predictions && (
                   <div className="mt-2 space-y-1">
-                    <div className="text-xs font-medium text-gray-600 mb-1">🔮 Predictions</div>
+                    <div className="text-xs font-medium text-muted-foreground mb-1">🔮 Predictions</div>
                     {message.predictions.slice(0, 2).map((prediction, idx) => (
                       <div
                         key={idx}
-                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border-l-2 border-blue-300"
+                        className="text-xs bg-info/10 text-info px-2 py-1 rounded border-l-2 border-info/30"
                       >
                         {prediction}
                       </div>
@@ -461,7 +461,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
               </div>
               
               {message.type === 'user' && (
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center ml-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center ml-2">
                   <User className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -475,14 +475,14 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="bg-gray-100 p-3 rounded-lg">
+            <div className="bg-muted p-3 rounded-lg border border-border">
               <div className="flex items-center gap-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-                <span className="text-sm text-gray-600">Thinking...</span>
+                <span className="text-sm text-muted-foreground">Thinking...</span>
               </div>
             </div>
           </motion.div>
@@ -492,7 +492,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
       </div>
 
       {/* Input area */}
-      <div className="border-t p-4">
+      <div className="border-t border-border p-4 bg-background">
         <div className="flex gap-2">
           <div className="flex-1">
             <textarea
@@ -506,7 +506,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                 }
               }}
               placeholder="Share what's on your mind..."
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full p-3 border border-input rounded-lg resize-none bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
               rows={2}
               disabled={isProcessing}
             />
@@ -518,8 +518,8 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
               disabled={isProcessing}
               className={`p-3 rounded-lg transition-colors ${
                 isListening
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-error text-error-foreground animate-pulse'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -528,14 +528,14 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
             <button
               onClick={() => handleSendMessage()}
               disabled={!input.trim() || isProcessing}
-              className="p-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors"
+              className="p-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
             >
               <MessageSquare className="w-5 h-5" />
             </button>
           </div>
         </div>
         
-        <div className="mt-2 text-xs text-gray-500 text-center">
+        <div className="mt-2 text-xs text-muted-foreground text-center">
           Press Enter to send • Shift+Enter for new line • Voice enabled: {voiceEnabled ? 'On' : 'Off'}
         </div>
       </div>
