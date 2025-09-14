@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MessageSquare, Mic, MicOff, Volume2, VolumeX, Heart, Brain, Sparkles, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { multidimensionalAIService } from '../lib/services/multidimensionalAIService';
+import { enhancedAIService } from '../lib/services/enhancedAiService';
 import { speechService } from '../lib/services/speechService';
 import { conversationService } from '../lib/services/conversationService';
 import type { VideoAnalysis, AudioAnalysis } from '../types/analysis';
@@ -101,14 +101,14 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
 
     try {
       // Get AI response with full context
-      const multidimensionalResponse = await multidimensionalAIService.generateMultidimensionalGuidance(
+      const enhancedResponse = await enhancedAIService.analyzeLifeContext(
         text,
         videoAnalysis,
         audioAnalysis
       );
 
       // Synthesize multidimensional response into conversational format
-      const synthesizedResponse = this.synthesizeIntoConversation(multidimensionalResponse, text);
+      const synthesizedResponse = this.synthesizeIntoConversation(enhancedResponse, text);
       
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
@@ -127,7 +127,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
         transcendentWisdom: synthesizedResponse.transcendentWisdom,
         quantumInsights: synthesizedResponse.quantumInsights,
         emergentPossibilities: synthesizedResponse.emergentPossibilities,
-        multidimensionalLevel: this.selectOptimalResponseLevel(multidimensionalResponse)
+        multidimensionalLevel: 'human'
       };
       
       setMessages(prev => [...prev, assistantMessage]);
@@ -201,81 +201,27 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
   }, [isSpeaking]);
 
   const synthesizeIntoConversation = useCallback((multidimensionalResponse: any, userInput: string) => {
-    // Intelligently synthesize multidimensional response into natural conversation
-    const level = this.selectOptimalResponseLevel(multidimensionalResponse);
-    
-    let mainResponse = '';
-    let emotion: Message['emotion'] = 'supportive';
-    let suggestions: string[] = [];
-    let followUpQuestions: string[] = [];
-    
-    switch (level) {
-      case 'human':
-        mainResponse = multidimensionalResponse.humanLevel.emotional + ' ' + multidimensionalResponse.humanLevel.psychological;
-        suggestions = multidimensionalResponse.humanLevel.support.slice(0, 3);
-        followUpQuestions = ['How does this feel for you?', 'What resonates most?'];
-        emotion = 'supportive';
-        break;
-        
-      case 'soul':
-        mainResponse = multidimensionalResponse.soulLevel.soulPerspective + ' ' + multidimensionalResponse.soulLevel.purposeGuidance;
-        suggestions = multidimensionalResponse.soulLevel.soulLessons.slice(0, 3);
-        followUpQuestions = ['What is your soul calling you toward?', 'How can you honor your authentic truth?'];
-        emotion = 'thoughtful';
-        break;
-        
-      case 'cosmic':
-        mainResponse = multidimensionalResponse.cosmicLevel.universalPerspective + ' ' + multidimensionalResponse.cosmicLevel.divineGuidance;
-        suggestions = [multidimensionalResponse.cosmicLevel.energeticAlignment];
-        followUpQuestions = ['How do you sense the cosmic support around you?'];
-        emotion = 'excited';
-        break;
-        
-      case 'transcendent':
-        mainResponse = multidimensionalResponse.transcendentWisdom.paradoxResolution + ' ' + multidimensionalResponse.transcendentWisdom.unityConsciousness;
-        suggestions = [multidimensionalResponse.transcendentWisdom.transcendentAction];
-        followUpQuestions = ['How can you embody this transcendent wisdom?'];
-        emotion = 'thoughtful';
-        break;
-        
-      case 'quantum':
-        mainResponse = multidimensionalResponse.quantumGuidance.probabilityCollapse + ' ' + multidimensionalResponse.quantumGuidance.timelineOptimization;
-        suggestions = [multidimensionalResponse.quantumGuidance.coherenceAmplification];
-        followUpQuestions = ['What timeline do you choose to activate?'];
-        emotion = 'excited';
-        break;
-    }
+    // Synthesize enhanced AI response into natural conversation
+    const mainResponse = multidimensionalResponse.text || "I'm here to support you through this.";
+    const emotion = multidimensionalResponse.emotion || 'supportive';
+    const suggestions = multidimensionalResponse.suggestions || [];
+    const followUpQuestions = multidimensionalResponse.followUpQuestions || [];
     
     return {
       text: mainResponse,
       emotion,
       suggestions,
       followUpQuestions,
-      predictions: multidimensionalResponse.emergentPossibilities.evolutionaryOpportunities,
+      predictions: multidimensionalResponse.predictions || [],
       riskFactors: [], // Minimize negative focus
-      growthOpportunities: multidimensionalResponse.emergentPossibilities.newPotentials,
-      psychologicalInsights: [multidimensionalResponse.humanLevel.psychological],
-      soulGuidance: multidimensionalResponse.soulLevel.evolution,
-      cosmicPerspective: multidimensionalResponse.cosmicLevel.cosmicPurpose,
-      transcendentWisdom: multidimensionalResponse.transcendentWisdom.compassionateService,
-      quantumInsights: [multidimensionalResponse.quantumGuidance.potentialActivation],
-      emergentPossibilities: multidimensionalResponse.emergentPossibilities.consciousnessExpansions
+      growthOpportunities: multidimensionalResponse.growthOpportunities || [],
+      psychologicalInsights: multidimensionalResponse.psychologicalInsights || [],
+      soulGuidance: multidimensionalResponse.soulGuidance,
+      cosmicPerspective: multidimensionalResponse.cosmicPerspective,
+      transcendentWisdom: multidimensionalResponse.transcendentWisdom,
+      quantumInsights: multidimensionalResponse.quantumInsights || [],
+      emergentPossibilities: multidimensionalResponse.emergentPossibilities || []
     };
-  }, []);
-
-  const selectOptimalResponseLevel = useCallback((response: any): Message['multidimensionalLevel'] => {
-    // Intelligent level selection based on user readiness and context
-    const conversationHistory = conversationService.getConversationHistory(10);
-    const spiritualWords = ['soul', 'spiritual', 'transcendent', 'cosmic', 'divine', 'consciousness'];
-    const spiritualFrequency = spiritualWords.filter(word => 
-      conversationHistory.some(msg => msg.content?.toLowerCase().includes(word))
-    ).length;
-    
-    if (spiritualFrequency > 5) return 'quantum';
-    if (spiritualFrequency > 3) return 'transcendent';
-    if (spiritualFrequency > 2) return 'cosmic';
-    if (spiritualFrequency > 1) return 'soul';
-    return 'human';
   }, []);
 
   const handleQuickResponse = useCallback((text: string) => {
@@ -507,13 +453,7 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
                 {/* Multidimensional Level Indicator */}
                 {message.type === 'assistant' && message.multidimensionalLevel && (
                   <div className="mt-2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      message.multidimensionalLevel === 'quantum' ? 'bg-cyan-100 text-cyan-700' :
-                      message.multidimensionalLevel === 'transcendent' ? 'bg-yellow-100 text-yellow-700' :
-                      message.multidimensionalLevel === 'cosmic' ? 'bg-indigo-100 text-indigo-700' :
-                      message.multidimensionalLevel === 'soul' ? 'bg-purple-100 text-purple-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                       {message.multidimensionalLevel.toUpperCase()} LEVEL
                     </span>
                   </div>

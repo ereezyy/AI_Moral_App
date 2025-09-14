@@ -240,7 +240,7 @@ BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} e
     return this.createStructuredResponse(text);
   }
 
-  private createAdvancedStructuredResponse(text: string, psychProfile?: any): LifePartnerResponse {
+  private createStructuredResponse(text: string): LifePartnerResponse {
     const lowerText = text.toLowerCase();
     
     // Determine emotion based on content
@@ -255,16 +255,6 @@ BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} e
     if (lowerText.includes('urgent') || lowerText.includes('important')) priority = 'high';
     if (lowerText.includes('immediate') || lowerText.includes('now')) priority = 'urgent';
     
-    // Enhanced analysis based on psychological profile
-    const psychologicalInsights = psychProfile ? [
-      `Based on your ${psychProfile.personality?.bigFive ? 'personality profile' : 'emerging patterns'}, this resonates with your core strengths`,
-      `Your ${psychProfile.attachmentStyle?.primaryStyle || 'developing'} attachment style influences how you approach relationships`,
-      `I notice patterns in your ${psychProfile.decisionMakingStyle?.style || 'thoughtful'} decision-making approach`
-    ] : [];
-
-    const coachingInterventions = this.identifyImmediateInterventions(text, psychProfile);
-    const skillDevelopment = this.identifySkillDevelopmentOpportunities(text, psychProfile);
-
     // Extract suggestions (simple heuristic)
     const suggestions = [];
     const sentences = text.split(/[.!?]+/);
@@ -283,18 +273,14 @@ BEHAVIORAL EXPERIMENTS: ${coachingGuidance.behavioralExperiments?.length || 0} e
         "How are you feeling about this approach?",
         "What patterns do you notice in yourself?",
         "How does this connect to your deeper values?"
-      ]
-      psychologicalInsights,
-      coachingInterventions,
-      skillDevelopment,
-      cognitiveReframes: this.generateBasicReframes(text),
-      behavioralSuggestions: this.generateBasicBehavioralSuggestions(text),
+      ],
+      psychologicalInsights: [],
+      coachingInterventions: [],
+      skillDevelopment: [],
+      cognitiveReframes: [],
+      behavioralSuggestions: [],
       crisisSupport: this.checkForCrisisNeed(text) ? ['National Crisis Line: 988', 'Crisis Text: 741741'] : undefined
     };
-  }
-
-  private createStructuredResponse(text: string): LifePartnerResponse {
-    return this.createAdvancedStructuredResponse(text);
   }
 
   private getAdvancedFallbackResponse(userInput: string, videoAnalysis: VideoAnalysis | null, psychProfile?: any): LifePartnerResponse {
