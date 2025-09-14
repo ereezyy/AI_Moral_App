@@ -6,12 +6,9 @@ import type { VideoAnalysis, AudioAnalysis, SituationalContext } from '../types'
 interface LifePartnerResponse {
   text: string;
   emotion: 'supportive' | 'encouraging' | 'concerned' | 'excited' | 'thoughtful';
-  priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   suggestions: string[];
   followUpQuestions: string[];
-  predictions?: string[];
-  riskFactors?: string[];
-  growthOpportunities?: string[];
 }
 
 class EnhancedAIService {
@@ -251,18 +248,6 @@ Provide your response in this JSON format:
         "What's the deeper fear or desire behind this situation?",
         "How does this connect to patterns we've discussed before?",
         "What would the version of you from a year from now advise?"
-      ],
-      predictions: [
-        "Based on your patterns, you'll likely find clarity after processing this emotionally",
-        "This situation may reveal new strengths you haven't recognized yet"
-      ],
-      riskFactors: [
-        "Tendency to overthink decisions when stressed",
-        "Pattern of being hard on yourself during transitions"
-      ],
-      growthOpportunities: [
-        "Developing trust in your decision-making intuition",
-        "Building resilience through this challenging moment"
       ]
     };
   }
@@ -317,6 +302,7 @@ Provide your response in this JSON format:
       recommendedPreparation: this.suggestPreparation(userInput, userProfile)
     };
   }
+
   async speakResponse(response: LifePartnerResponse): Promise<void> {
     const voiceOptions = {
       rate: response.emotion === 'excited' ? 1.1 : 0.9,
@@ -326,7 +312,6 @@ Provide your response in this JSON format:
     
     await speechService.speak(response.text, voiceOptions);
   }
-}
 
   private buildBehavioralAnalysis(patterns: any, trends: any): string {
     if (!patterns) return 'Behavioral analysis not available';
@@ -485,4 +470,5 @@ Decision confidence level: ${this.assessDecisionConfidence(input, video, audio)}
     return hasUncertainty ? 'Low - needs support' : 'Moderate - developing';
   }
 }
+
 export const enhancedAIService = EnhancedAIService.getInstance();
