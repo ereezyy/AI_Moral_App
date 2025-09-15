@@ -31,7 +31,7 @@ export function PsychologicalProfile({ videoAnalysis, audioAnalysis }: Psycholog
       
       try {
         const conversationHistory = conversationService.getConversationHistory(50);
-        const psychProfile = this.buildBasicPsychProfile(conversationHistory, videoAnalysis, audioAnalysis);
+        const psychProfile = buildBasicPsychProfile(conversationHistory, videoAnalysis, audioAnalysis);
 
         setProfile(psychProfile);
         setSections([
@@ -91,9 +91,9 @@ export function PsychologicalProfile({ videoAnalysis, audioAnalysis }: Psycholog
   }, [videoAnalysis, audioAnalysis]);
 
   const buildBasicPsychProfile = (history: any[], video: VideoAnalysis | null, audio: AudioAnalysis | null) => {
-    const emotionalData = this.analyzeEmotionalPatterns(history, video, audio);
-    const communicationData = this.analyzeCommunicationPatterns(history, audio);
-    const behavioralData = this.analyzeBehavioralPatterns(history, video);
+    const emotionalData = analyzeEmotionalPatterns(history, video, audio);
+    const communicationData = analyzeCommunicationPatterns(history, audio);
+    const behavioralData = analyzeBehavioralPatterns(history, video);
     
     return {
       personality: {
@@ -104,8 +104,8 @@ export function PsychologicalProfile({ videoAnalysis, audioAnalysis }: Psycholog
           agreeableness: emotionalData.empathy,
           neuroticism: emotionalData.stress
         },
-        strengthsProfile: this.identifyStrengths(emotionalData, communicationData, behavioralData),
-        coreMotivations: this.identifyMotivations(history)
+        strengthsProfile: identifyStrengths(emotionalData, communicationData, behavioralData),
+        coreMotivations: identifyMotivations(history)
       },
       emotionalIntelligence: {
         selfAwareness: emotionalData.awareness,
