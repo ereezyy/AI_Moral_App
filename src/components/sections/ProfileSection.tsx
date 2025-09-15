@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Activity, BarChart3 } from 'lucide-react';
+import { User, Activity, BarChart3, Brain } from 'lucide-react';
 import { TabNavigation } from '../navigation/TabNavigation';
 import { PsychologicalProfile } from '../PsychologicalProfile';
 import { ActivityTracker } from '../ActivityTracker';
