@@ -33,12 +33,16 @@ class EnhancedAIService {
 
   async analyzeLifeContext(
     userInput: string,
-    videoAnalysis: VideoAnalysis | null,
-    audioAnalysis: AudioAnalysis | null,
+    videoAnalysisParam: VideoAnalysis | null,
+    audioAnalysisParam: AudioAnalysis | null,
     situationalContext?: Partial<SituationalContext>
   ): Promise<LifePartnerResponse> {
     return await CentralizedErrorHandler.handleAsync(
       async () => {
+        // Rename parameters to avoid potential variable shadowing
+        const videoAnalysis = videoAnalysisParam;
+        const audioAnalysis = audioAnalysisParam;
+        
         const conversationHistory = conversationService.getConversationHistory(10);
         const conversationPatterns = ConversationAnalyzer.analyzeConversationHistory(conversationHistory);
         const userProfile = ConversationAnalyzer.extractUserProfile(conversationPatterns);

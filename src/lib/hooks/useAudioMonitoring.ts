@@ -65,13 +65,13 @@ export function useAudioMonitoring(
     analyzer.getByteFrequencyData(frequencyData);
     analyzer.getByteTimeDomainData(timeDomainData);
 
-    const volume = this.calculateVolume(frequencyData);
-    const clarity = this.calculateClarity(frequencyData);
-    const pitch = this.calculatePitch(frequencyData, audioContext.sampleRate);
+    const volume = calculateVolume(frequencyData);
+    const clarity = calculateClarity(frequencyData);
+    const pitch = calculatePitch(frequencyData, audioContext.sampleRate);
     
-    const emotionalTone = this.analyzeEmotionalTone(volume, clarity, pitch);
-    const sentiment = this.calculateSentiment(volume, clarity, pitch, emotionalTone);
-    const toxicity = this.detectToxicity(volume, pitch, timeDomainData);
+    const emotionalTone = analyzeEmotionalTone(volume, clarity, pitch);
+    const sentiment = calculateSentiment(volume, clarity, pitch, emotionalTone);
+    const toxicity = detectToxicity(volume, pitch, timeDomainData);
 
     return {
       sentiment,

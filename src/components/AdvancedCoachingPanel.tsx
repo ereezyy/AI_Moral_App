@@ -33,20 +33,20 @@ export function AdvancedCoachingPanel() {
         
         const realSession: CoachingSession = {
           id: 'session-' + Date.now(),
-          goals: this.generatePersonalizedGoals(conversationHistory, userProfile),
-          interventions: this.generatePersonalizedInterventions(conversationHistory, userProfile),
-          skillBuilding: this.generatePersonalizedSkillBuilding(conversationHistory, userProfile),
+          goals: generatePersonalizedGoals(conversationHistory, userProfile),
+          interventions: generatePersonalizedInterventions(conversationHistory, userProfile),
+          skillBuilding: generatePersonalizedSkillBuilding(conversationHistory, userProfile),
           emotionalRegulation: {
-            currentEmotionalState: this.assessCurrentEmotionalState(conversationHistory),
+            currentEmotionalState: assessCurrentEmotionalState(conversationHistory),
             regulationNeeded: false,
             techniques: {
               immediate: ['Deep breathing', 'Grounding exercises'],
               shortTerm: ['Journaling', 'Physical movement'],
               longTerm: ['Mindfulness meditation', 'Therapy skills']
             },
-            customizedApproach: this.createCustomizedApproach(userProfile)
+            customizedApproach: createCustomizedApproach(userProfile)
           },
-          exercises: this.generatePersonalizedExercises(conversationHistory, userProfile),
+          exercises: generatePersonalizedExercises(conversationHistory, userProfile),
           progress: {
             completed: [],
             inProgress: ['emotional-regulation-1'],
