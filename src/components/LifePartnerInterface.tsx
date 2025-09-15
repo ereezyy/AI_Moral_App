@@ -101,10 +101,13 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
 
     try {
       // Get AI response with full context
+      const safeVideoAnalysis = videoAnalysis || null;
+      const safeAudioAnalysis = audioAnalysis || null;
+      
       const enhancedResponse = await enhancedAIService.analyzeLifeContext(
         text,
-        videoAnalysis,
-        audioAnalysis
+        safeVideoAnalysis,
+        safeAudioAnalysis
       );
 
       // Synthesize multidimensional response into conversational format
