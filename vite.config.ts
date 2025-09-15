@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    exclude: [],
     include: [
       '@tensorflow/tfjs-core',
       '@tensorflow/tfjs-data',
