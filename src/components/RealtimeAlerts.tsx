@@ -14,38 +14,38 @@ interface Alert {
 const MEANINGFUL_ALERTS = [
   {
     type: 'ethical' as const,
-    title: 'Decision Point Detected',
-    message: 'Consider long-term consequences of your current choice',
+    title: 'Important Choice Ahead',
+    message: 'This decision could have lasting effects. Let\'s think it through.',
     actionable: true
   },
   {
     type: 'info' as const,
-    title: 'Emotional State Change',
-    message: 'Your emotional state appears more balanced now',
+    title: 'Mood Shift Noticed',
+    message: 'You seem more balanced now. Great progress!',
     actionable: false
   },
   {
     type: 'warning' as const,
-    title: 'Stress Indicator',
-    message: 'High stress detected - consider taking a brief pause',
+    title: 'Stress Alert',
+    message: 'You seem stressed. Maybe take a quick break?',
     actionable: true
   },
   {
     type: 'success' as const,
-    title: 'Positive Pattern',
-    message: 'Consistent ethical decision-making observed',
+    title: 'Great Pattern!',
+    message: 'You\'re making thoughtful choices consistently',
     actionable: false
   },
   {
     type: 'ethical' as const,
-    title: 'Value Conflict',
-    message: 'Potential conflict between personal and professional values',
+    title: 'Values Clash',
+    message: 'Your personal and work values might be conflicting here',
     actionable: true
   },
   {
     type: 'info' as const,
-    title: 'Context Shift',
-    message: 'Environmental change detected - recalibrating analysis',
+    title: 'Environment Changed',
+    message: 'I notice you\'re in a different setting now',
     actionable: false
   }
 ];

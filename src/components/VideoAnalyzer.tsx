@@ -182,8 +182,8 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
               <div className="bg-background p-4 rounded-lg flex items-center gap-3 border border-border">
                 <Activity className="w-6 h-6 text-primary animate-spin" />
                 <div>
-                  <div className="font-medium text-foreground">Initializing AI Models</div>
-                  <div className="text-sm text-muted-foreground">Loading face detection...</div>
+                  <div className="font-medium text-foreground">Getting Ready</div>
+                  <div className="text-sm text-muted-foreground">Loading emotion detection...</div>
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
               <div className="bg-background p-4 rounded-lg max-w-sm border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertCircle className="w-6 h-6 text-error" />
-                  <span className="font-medium text-error">Setup Failed</span>
+                  <span className="font-medium text-error">Camera Setup Failed</span>
                 </div>
                 <p className="text-sm text-foreground">{error}</p>
                 <button

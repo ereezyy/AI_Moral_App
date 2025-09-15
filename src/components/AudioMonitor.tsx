@@ -36,7 +36,7 @@ export function AudioMonitor({ onAnalysis }: AudioMonitorProps) {
               : 'bg-success/10 text-success hover:bg-success/20'
           }`}
         >
-          {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
+          {isMonitoring ? 'Stop Listening' : 'Start Listening'}
         </button>
       </div>
 

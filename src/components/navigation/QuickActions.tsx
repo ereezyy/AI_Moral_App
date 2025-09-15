@@ -19,33 +19,33 @@ export function QuickActions({ onAction }: QuickActionsProps) {
   const quickActions: QuickAction[] = [
     {
       id: 'start-chat',
-      label: 'Chat with AI',
+      label: 'Start Chat',
       icon: MessageSquare,
-      description: 'Start conversation with your AI life partner',
+      description: 'Talk with your AI companion',
       color: 'bg-indigo-500 text-white',
       action: () => onAction('coaching')
     },
     {
       id: 'analyze-emotion',
-      label: 'Check Emotions',
+      label: 'Check Mood',
       icon: Heart,
-      description: 'Analyze current emotional state',
+      description: 'See how you're feeling right now',
       color: 'bg-purple-500 text-white',
       action: () => onAction('analysis')
     },
     {
       id: 'view-insights',
-      label: 'View Insights',
+      label: 'See Insights',
       icon: TrendingUp,
-      description: 'See predictive patterns and trends',
+      description: 'View your patterns and trends',
       color: 'bg-blue-500 text-white',
       action: () => onAction('insights')
     },
     {
       id: 'coaching-session',
-      label: 'Coaching',
+      label: 'Get Coaching',
       icon: Target,
-      description: 'Start personalized coaching session',
+      description: 'Get personalized guidance',
       color: 'bg-green-500 text-white',
       action: () => onAction('coaching')
     }

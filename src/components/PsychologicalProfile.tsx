@@ -522,9 +522,9 @@ export function PsychologicalProfile({ videoAnalysis, audioAnalysis }: Psycholog
       {!profile && !isAnalyzing && (
         <div className="text-center py-8 text-gray-500">
           <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Psychological profiling will begin once you interact with the AI...</p>
+          <p className="text-sm">Your personality profile will appear after you chat with the AI...</p>
           <p className="text-xs opacity-75 mt-1">
-            Advanced personality, cognitive, and behavioral analysis
+            Personality insights, thinking patterns, and behavior analysis
           </p>
         </div>
       )}

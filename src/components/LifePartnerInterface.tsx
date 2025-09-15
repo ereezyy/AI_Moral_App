@@ -65,13 +65,13 @@ export function LifePartnerInterface({ videoAnalysis, audioAnalysis }: LifePartn
         const welcomeMessage: Message = {
           id: crypto.randomUUID(),
           type: 'assistant',
-          content: "Hey there! I'm your AI life partner. I can see and hear you, and I'm here to offer support, guidance, and just be someone to talk to. How are you feeling today?",
+          content: "Hi! I'm here to help you with life's decisions and personal growth. Think of me as your supportive AI companion who listens and offers guidance. How are you feeling today?",
           timestamp: Date.now(),
           emotion: 'supportive',
           suggestions: [
             "Tell me about your day",
-            "Share what's on your mind", 
-            "Ask for advice on anything"
+            "Share what's on your mind",
+            "Get advice on a decision"
           ]
         };
         setMessages([welcomeMessage]);

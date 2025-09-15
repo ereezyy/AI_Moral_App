@@ -31,7 +31,7 @@ export function MoralDilemma({ dilemma, onSubmit, isProcessing }: {
       <div className="mb-6">
         <h3 className="text-lg font-medium text-gray-700 mb-2 flex items-center gap-2">
           <Brain className="w-5 h-5 text-indigo-600" />
-          AI Analysis Features
+          How AI Helps
         </h3>
         <ul className="list-disc list-inside space-y-2">
           {dilemma.considerations.map((point, index) => (
@@ -45,7 +45,7 @@ export function MoralDilemma({ dilemma, onSubmit, isProcessing }: {
 
       <div className="mb-4">
         <label htmlFor="response" className="block text-sm font-medium text-gray-700 mb-3">
-          Describe your situation or dilemma
+          Tell me about your situation
         </label>
         <textarea
           id="response"
@@ -53,11 +53,11 @@ export function MoralDilemma({ dilemma, onSubmit, isProcessing }: {
           rows={4}
           value={response}
           onChange={(e) => setResponse(e.target.value)}
-          placeholder="e.g., 'I have to choose between being honest with my friend about something difficult, or protecting their feelings...'"
+          placeholder="Example: 'I need to choose between telling my friend the truth or protecting their feelings...'"
           disabled={isProcessing}
         />
         <p className="text-sm text-gray-500 mt-2">
-          Be as detailed as possible for more accurate guidance
+          The more details you share, the better I can help
         </p>
       </div>
 

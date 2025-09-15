@@ -16,17 +16,17 @@ export function AnalysisSection({ onVideoAnalysis, onAudioAnalysis }: AnalysisSe
   const tabs = [
     {
       id: 'video',
-      label: 'Video Analysis',
+      label: 'Camera View',
       icon: <Video className="w-4 h-4" />,
     },
     {
       id: 'audio',
-      label: 'Audio Monitor',
+      label: 'Voice Monitor',
       icon: <Mic className="w-4 h-4" />,
     },
     {
       id: 'combined',
-      label: 'Combined View',
+      label: 'Full View',
       icon: <Brain className="w-4 h-4" />,
     }
   ];

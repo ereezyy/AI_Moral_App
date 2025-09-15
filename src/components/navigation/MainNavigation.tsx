@@ -20,17 +20,17 @@ export function MainNavigation({ currentSection, onSectionChange }: MainNavigati
       label: 'Overview',
       icon: Home,
       path: '/overview',
-      description: 'Dashboard and daily summary'
+      description: 'Your daily dashboard'
     },
     {
       id: 'analysis',
-      label: 'Live Analysis',
+      label: 'Live Monitor',
       icon: Brain,
       path: '/analysis',
-      description: 'Real-time video and audio monitoring',
+      description: 'Real-time emotional analysis',
       children: [
-        { id: 'video', label: 'Video Analysis', icon: Video, path: '/analysis/video' },
-        { id: 'audio', label: 'Audio Monitor', icon: Mic, path: '/analysis/audio' }
+        { id: 'video', label: 'Camera View', icon: Video, path: '/analysis/video' },
+        { id: 'audio', label: 'Voice Monitor', icon: Mic, path: '/analysis/audio' }
       ]
     },
     {
@@ -38,7 +38,7 @@ export function MainNavigation({ currentSection, onSectionChange }: MainNavigati
       label: 'AI Partner',
       icon: MessageSquare,
       path: '/coaching',
-      description: 'Conversational AI life guidance',
+      description: 'Chat with your AI companion',
       badge: 'Live'
     },
     {
@@ -46,10 +46,10 @@ export function MainNavigation({ currentSection, onSectionChange }: MainNavigati
       label: 'Insights',
       icon: TrendingUp,
       path: '/insights',
-      description: 'Predictive analytics and patterns',
+      description: 'Your patterns and predictions',
       children: [
         { id: 'predictive', label: 'Predictions', icon: TrendingUp, path: '/insights/predictive' },
-        { id: 'multidimensional', label: 'Consciousness', icon: Sparkles, path: '/insights/consciousness' }
+        { id: 'multidimensional', label: 'Deep Analysis', icon: Sparkles, path: '/insights/consciousness' }
       ]
     },
     {
@@ -57,14 +57,14 @@ export function MainNavigation({ currentSection, onSectionChange }: MainNavigati
       label: 'Profile',
       icon: User,
       path: '/profile',
-      description: 'Psychological analysis and growth tracking'
+      description: 'Your personality and growth'
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: Settings,
       path: '/settings',
-      description: 'Preferences and configuration'
+      description: 'App preferences'
     }
   ];
 
@@ -86,8 +86,8 @@ export function MainNavigation({ currentSection, onSectionChange }: MainNavigati
               <Brain className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">MoralAI</h1>
-              <p className="text-xs text-muted-foreground">Life Guidance</p>
+              <h1 className="text-lg font-bold text-foreground">MoralAI Guide</h1>
+              <p className="text-xs text-muted-foreground">Your AI Life Companion</p>
             </div>
           </div>
         </div>

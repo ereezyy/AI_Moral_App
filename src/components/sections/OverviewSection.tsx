@@ -52,26 +52,26 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
         <div className="flex items-center gap-3 mb-3">
           <Brain className="w-8 h-8 text-primary" />
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Welcome to MoralAI Guide</h3>
-            <p className="text-muted-foreground">Your AI-powered companion for ethical decision-making and personal growth</p>
+            <h3 className="text-lg font-semibold text-foreground">Welcome to Your AI Life Companion</h3>
+            <p className="text-muted-foreground">Get personalized guidance for life's decisions and unlock your growth potential</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
             <Brain className="w-6 h-6 text-indigo-600 mb-2" />
-            <h4 className="font-medium text-foreground">Real-time Analysis</h4>
-            <p className="text-xs text-muted-foreground">Video and audio monitoring for comprehensive insights</p>
+            <h4 className="font-medium text-foreground">Smart Analysis</h4>
+            <p className="text-xs text-muted-foreground">Understands your emotions through camera and voice</p>
           </div>
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
             <TrendingUp className="w-6 h-6 text-blue-600 mb-2" />
-            <h4 className="font-medium text-foreground">Predictive Intelligence</h4>
-            <p className="text-xs text-muted-foreground">Pattern recognition and behavioral predictions</p>
+            <h4 className="font-medium text-foreground">Smart Predictions</h4>
+            <p className="text-xs text-muted-foreground">Learns your patterns to predict what helps you most</p>
           </div>
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
             <Activity className="w-6 h-6 text-green-600 mb-2" />
             <h4 className="font-medium text-foreground">Personal Growth</h4>
-            <p className="text-xs text-muted-foreground">Tailored coaching and development recommendations</p>
+            <p className="text-xs text-muted-foreground">Personalized coaching that grows with you</p>
           </div>
         </div>
       </div>
