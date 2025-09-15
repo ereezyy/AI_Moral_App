@@ -29,7 +29,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       id: 'analyze-emotion',
       label: 'Check Mood',
       icon: Heart,
-      description: 'See how you're feeling right now',
+      description: 'See how you\'re feeling right now',
       color: 'bg-purple-500 text-white',
       action: () => onAction('analysis')
     },
