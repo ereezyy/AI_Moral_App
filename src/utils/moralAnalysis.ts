@@ -1,16 +1,10 @@
-import * as toxicity from '@tensorflow-models/toxicity';
 import { MoralAnalysis, AudioAnalysis, VideoAnalysis, SituationalContext } from '../types/analysis';
 
 let toxicityModel: any = null;
 
 export async function initializeMoralAnalysis() {
-  try {
-    toxicityModel = await toxicity.load(0.7);
-    return true;
-  } catch (error) {
-    console.error('Failed to initialize moral analysis:', error);
-    return false;
-  }
+  console.warn('Moral analysis initialized without TensorFlow toxicity model');
+  return true;
 }
 
 export async function analyzeMoralContext(

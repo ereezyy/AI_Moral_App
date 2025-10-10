@@ -1,8 +1,6 @@
-import * as speechCommands from '@tensorflow-models/speech-commands';
-
 class AudioModel {
   private static instance: AudioModel;
-  private recognizer: speechCommands.SpeechCommandRecognizer | null = null;
+  private recognizer: any = null;
 
   private constructor() {}
 
@@ -14,31 +12,16 @@ class AudioModel {
   }
 
   async initialize(): Promise<boolean> {
-    try {
-      this.recognizer = speechCommands.create('BROWSER_FFT');
-      await this.recognizer.ensureModelLoaded();
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize audio model:', error);
-      return false;
-    }
+    console.warn('Audio model unavailable - TensorFlow removed');
+    return false;
   }
 
   async startListening(onResult: (result: { scores: Float32Array }) => void) {
-    if (!this.recognizer) {
-      throw new Error('Audio model not initialized');
-    }
-
-    await this.recognizer.listen(onResult, {
-      includeSpectrogram: true,
-      probabilityThreshold: 0.75
-    });
+    console.warn('Audio listening unavailable - TensorFlow removed');
   }
 
   async stopListening() {
-    if (this.recognizer) {
-      await this.recognizer.stopListening();
-    }
+    console.warn('Audio model unavailable - TensorFlow removed');
   }
 }
 

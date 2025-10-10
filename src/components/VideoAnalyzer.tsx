@@ -8,7 +8,6 @@ import {
   getPerformanceMetrics,
   isVideoAnalysisReady
 } from '../utils/videoAnalysis';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
 interface VideoAnalyzerProps {
   onAnalysis: (analysis: VideoAnalysis) => void;
@@ -20,7 +19,7 @@ export function VideoAnalyzer({ onAnalysis }: VideoAnalyzerProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [detector, setDetector] = useState<faceLandmarksDetection.FaceLandmarksDetector | null>(null);
+  const [detector, setDetector] = useState<any>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [performanceInfo, setPerformanceInfo] = useState({ avgTime: 0, totalAnalyses: 0 });
   const [lastAnalysis, setLastAnalysis] = useState<VideoAnalysis | null>(null);

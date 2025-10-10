@@ -1,9 +1,8 @@
-import * as tf from '@tensorflow/tfjs';
 import type { MoralAnalysis, SituationalContext } from '@/types/analysis';
 
 class MoralAnalysisModel {
   private static instance: MoralAnalysisModel;
-  private model: tf.LayersModel | null = null;
+  private model: any = null;
   private readonly ethicalPrinciples = [
     'autonomy',
     'beneficence',

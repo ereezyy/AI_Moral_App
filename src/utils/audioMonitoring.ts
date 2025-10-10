@@ -1,4 +1,3 @@
-import * as speechCommands from '@tensorflow-models/speech-commands';
 import { AudioAnalysis, EmotionalState } from '../types/analysis';
 
 let audioContext: AudioContext | null = null;

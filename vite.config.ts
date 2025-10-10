@@ -4,17 +4,6 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    exclude: [],
-    include: [
-      '@tensorflow/tfjs-core',
-      '@tensorflow/tfjs-data',
-      '@tensorflow/tfjs-layers',
-      '@tensorflow/tfjs-layers',
-      '@tensorflow-models/speech-commands',
-      '@tensorflow/tfjs-backend-webgl'
-    ]
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -30,21 +19,10 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
-    commonjsOptions: {
-      include: [/node_modules\/@tensorflow\//]
-    },
     rollupOptions: {
-      external: ['@tensorflow/tfjs-data'],
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'tensorflow': ['@tensorflow/tfjs'],
-          'models': [
-            '@tensorflow-models/blazeface',
-            '@tensorflow-models/face-landmarks-detection',
-            '@tensorflow-models/speech-commands',
-            '@tensorflow-models/toxicity'
-          ]
+          'react-vendor': ['react', 'react-dom']
         }
       }
     }

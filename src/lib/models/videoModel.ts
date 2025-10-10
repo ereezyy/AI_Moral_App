@@ -1,11 +1,8 @@
-import * as tf from '@tensorflow/tfjs';
-import * as blazeface from '@tensorflow-models/blazeface';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import type { VideoAnalysis } from '@/types/analysis';
 
 class VideoModel {
   private static instance: VideoModel;
-  private faceModel: blazeface.BlazeFaceModel | null = null;
+  private faceModel: any = null;
   private landmarkModel: any | null = null;
 
   private constructor() {}
@@ -18,33 +15,12 @@ class VideoModel {
   }
 
   async initialize(): Promise<boolean> {
-    try {
-      this.faceModel = await blazeface.load();
-      this.landmarkModel = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
-      );
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize video model:', error);
-      return false;
-    }
+    console.warn('Video model unavailable - TensorFlow removed');
+    return false;
   }
 
   async analyzeFrame(videoElement: HTMLVideoElement): Promise<VideoAnalysis | null> {
-    if (!this.faceModel || !this.landmarkModel) return null;
-
-    const faces = await this.faceModel.estimateFaces(videoElement);
-    if (faces.length === 0) return null;
-
-    const landmarks = await this.landmarkModel.estimateFaces({
-      input: videoElement,
-    });
-
-    return {
-      facialExpression: await this.analyzeEmotionalState(landmarks[0]),
-      attentiveness: this.calculateAttentiveness(landmarks[0]),
-      environmentalContext: this.analyzeEnvironmentalContext(videoElement),
-    };
+    return null;
   }
 
   private async analyzeEmotionalState(landmarks: any) {

@@ -2,27 +2,16 @@ import { VideoAnalysis, EmotionalState } from '../../types';
 import { logger } from '../logger';
 import { Profiler } from '../performance';
 import { APP_CONFIG } from '../../config';
-import * as tf from '@tensorflow/tfjs';
-import * as blazeface from '@tensorflow-models/blazeface';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
 export class VideoMonitor {
-  private faceModel: blazeface.BlazeFaceModel | null = null;
+  private faceModel: any = null;
   private landmarkModel: any | null = null;
   private stream: MediaStream | null = null;
 
   async initialize(): Promise<boolean> {
     return await Profiler.profileAsync('video-init', async () => {
-      try {
-        this.faceModel = await blazeface.load();
-        this.landmarkModel = await faceLandmarksDetection.load(
-          faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
-        );
-        return true;
-      } catch (error) {
-        logger.error('Failed to initialize video monitoring', { error });
-        return false;
-      }
+      logger.warn('Video monitoring unavailable - TensorFlow removed');
+      return false;
     });
   }
 

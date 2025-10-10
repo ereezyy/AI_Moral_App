@@ -1,11 +1,10 @@
-import * as speechCommands from '@tensorflow-models/speech-commands';
 import type { AudioAnalysis, EmotionalState } from '../types/analysis';
 
 interface AudioContext {
   audioContext: AudioContext | null;
   analyzer: AnalyserNode | null;
   mediaStream: MediaStream | null;
-  speechRecognizer: speechCommands.SpeechCommandRecognizer | null;
+  speechRecognizer: any | null;
 }
 
 const audioState: AudioContext = {
@@ -38,14 +37,8 @@ export async function initializeAudioAnalysis(): Promise<boolean> {
     audioState.analyzer.maxDecibels = -10;
     source.connect(audioState.analyzer);
     
-    // Initialize speech command recognizer for audio pattern analysis
-    try {
-      audioState.speechRecognizer = speechCommands.create('BROWSER_FFT');
-      await audioState.speechRecognizer.ensureModelLoaded();
-      console.log('Speech command recognizer loaded');
-    } catch (error) {
-      console.warn('Speech command recognizer failed to load:', error);
-    }
+    // Speech command recognizer removed - TensorFlow models unavailable
+    console.log('Audio analysis initialized (speech commands unavailable)');
     
     console.log('Audio analysis initialized successfully');
     return true;

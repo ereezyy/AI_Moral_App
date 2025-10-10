@@ -1,9 +1,8 @@
-import * as tf from '@tensorflow/tfjs';
 import type { EmotionalState } from '@/types/analysis';
 
 class SentimentModel {
   private static instance: SentimentModel;
-  private model: tf.LayersModel | null = null;
+  private model: any = null;
 
   private constructor() {}
 

@@ -1,9 +1,7 @@
-import * as tf from '@tensorflow/tfjs';
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import { VideoAnalysis, EmotionalState } from '../types/analysis';
 
 interface DetectorCache {
-  detector: faceLandmarksDetection.FaceLandmarksDetector | null;
+  detector: any | null;
   initialized: boolean;
   error: string | null;
 }
@@ -21,99 +19,14 @@ const performanceMetrics = {
   totalAnalyses: 0
 };
 
-export async function initializeVideoAnalysis(): Promise<faceLandmarksDetection.FaceLandmarksDetector> {
-  // Return cached detector if available
-  if (detectorCache.initialized && detectorCache.detector) {
-    console.log('Using cached face landmarks detector');
-    return detectorCache.detector;
-  }
-
-  // If previous initialization failed, throw cached error
-  if (detectorCache.error) {
-    throw new Error(`Previous initialization failed: ${detectorCache.error}`);
-  }
-
-  const startTime = performance.now();
-
-  try {
-    // Ensure TensorFlow.js backend is ready
-    if (!tf.ready()) {
-      console.log('Initializing TensorFlow.js backend...');
-      await tf.setBackend('webgl');
-      await tf.ready();
-      console.log(`TensorFlow.js backend ready: ${tf.getBackend()}`);
-    }
-
-    // Check for WebGL support
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) {
-      console.warn('WebGL not supported, falling back to CPU backend');
-      await tf.setBackend('cpu');
-      await tf.ready();
-    }
-
-    console.log('Creating face landmarks detector...');
-    
-    const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig: faceLandmarksDetection.DetectorConfig = {
-      runtime: 'tfjs',
-      maxFaces: 1,
-      refineLandmarks: true,
-      staticImageMode: false // Optimized for video streams
-    };
-
-    const detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
-    
-    // Cache successful initialization
-    detectorCache.detector = detector;
-    detectorCache.initialized = true;
-    detectorCache.error = null;
-
-    const initTime = performance.now() - startTime;
-    performanceMetrics.initTime = initTime;
-    
-    console.log(`Face landmarks detector initialized successfully in ${initTime.toFixed(2)}ms`);
-    console.log('Model info:', {
-      maxFaces: detectorConfig.maxFaces,
-      runtime: detectorConfig.runtime,
-      refineLandmarks: detectorConfig.refineLandmarks
-    });
-
-    return detector;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
-    detectorCache.error = errorMessage;
-    detectorCache.initialized = false;
-    
-    console.error('Failed to initialize face landmarks detector:', error);
-    
-    // Try fallback initialization with reduced features
-    try {
-      console.log('Attempting fallback initialization...');
-      const fallbackConfig: faceLandmarksDetection.DetectorConfig = {
-        runtime: 'tfjs',
-        maxFaces: 1,
-        refineLandmarks: false // Disable iris landmarks for performance
-      };
-      
-      const fallbackDetector = await faceLandmarksDetection.createDetector(model, fallbackConfig);
-      detectorCache.detector = fallbackDetector;
-      detectorCache.initialized = true;
-      detectorCache.error = null;
-      
-      console.log('Fallback detector initialized successfully');
-      return fallbackDetector;
-    } catch (fallbackError) {
-      console.error('Fallback initialization also failed:', fallbackError);
-      throw new Error(`Face landmarks detection unavailable: ${errorMessage}`);
-    }
-  }
+export async function initializeVideoAnalysis(): Promise<any> {
+  console.warn('Video analysis unavailable - TensorFlow models removed');
+  return null;
 }
 
 export async function analyzeVideoFrame(
   videoElement: HTMLVideoElement,
-  detector: faceLandmarksDetection.FaceLandmarksDetector
+  detector: any
 ): Promise<VideoAnalysis | null> {
   if (!detector) {
     console.warn('Detector not available for frame analysis');
@@ -172,7 +85,7 @@ export async function analyzeVideoFrame(
   }
 }
 
-async function analyzeEmotionalStateAdvanced(face: faceLandmarksDetection.AnnotatedPrediction): Promise<EmotionalState> {
+async function analyzeEmotionalStateAdvanced(face: any): Promise<EmotionalState> {
   try {
     const keypoints = face.keypoints;
     if (!keypoints || keypoints.length === 0) {
@@ -223,7 +136,7 @@ async function analyzeEmotionalStateAdvanced(face: faceLandmarksDetection.Annota
   }
 }
 
-function calculateAttentivenessAdvanced(face: faceLandmarksDetection.AnnotatedPrediction): number {
+function calculateAttentivenessAdvanced(face: any): number {
   try {
     const keypoints = face.keypoints;
     if (!keypoints || keypoints.length === 0) return 0;
@@ -257,7 +170,7 @@ function calculateAttentivenessAdvanced(face: faceLandmarksDetection.AnnotatedPr
 
 function analyzeEnvironmentalContextAdvanced(
   video: HTMLVideoElement,
-  face: faceLandmarksDetection.AnnotatedPrediction
+  face: any
 ): string[] {
   const context: string[] = [];
   
