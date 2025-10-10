@@ -3,6 +3,8 @@ import { Home, Activity, Brain, TrendingUp } from 'lucide-react';
 import { PerformanceMetrics } from '../PerformanceMetrics';
 import { EnhancedRealtimeAlerts } from '../EnhancedRealtimeAlerts';
 import { QuickActions } from '../navigation/QuickActions';
+import { AnalyticsCharts } from '../AnalyticsCharts';
+import { ConversationHistory } from '../ConversationHistory';
 import { useStore } from '../../store/useStore';
 import type { NavigationSection } from '../../types/navigation';
 
@@ -40,6 +42,12 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
 
       {/* Quick Actions */}
       <QuickActions onAction={handleQuickAction} />
+
+      {/* Analytics Charts */}
+      <AnalyticsCharts />
+
+      {/* Conversation History */}
+      <ConversationHistory onLoadConversation={(id) => onNavigate('coaching')} />
 
       {/* Performance Metrics */}
       <PerformanceMetrics stats={stats} />

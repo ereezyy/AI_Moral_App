@@ -40,7 +40,20 @@ export class ConversationService {
   }
 
   private async initializeAuth(): Promise<void> {
-    this.currentUserId = 'demo-user-' + Date.now();
+    let userId = localStorage.getItem('demo_user_id');
+    if (!userId) {
+      userId = 'demo-user-' + crypto.randomUUID();
+      localStorage.setItem('demo_user_id', userId);
+    }
+    this.currentUserId = userId;
+
+    await supabase.from('user_profiles').upsert({
+      id: userId,
+      psychological_profile: {},
+      behavioral_patterns: {},
+      total_decisions: 0,
+      consistency_score: 0
+    }, { onConflict: 'id' });
   }
 
   async startNewConversation(title?: string): Promise<string> {
@@ -48,20 +61,57 @@ export class ConversationService {
       await this.initializeAuth();
     }
 
-    this.currentConversationId = crypto.randomUUID();
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({
+        user_id: this.currentUserId!,
+        title: title || 'New Conversation'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    this.currentConversationId = data.id;
     this.messages = [];
     geminiService.clearHistory();
 
-    return this.currentConversationId;
+    return data.id;
   }
 
   async loadConversation(conversationId: string): Promise<ConversationSession> {
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+
+    if (convError) throw convError;
+
+    const { data: messages, error: msgError } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (msgError) throw msgError;
+
+    this.currentConversationId = conversationId;
+    this.messages = messages.map(msg => ({
+      id: msg.id,
+      role: msg.role,
+      content: msg.content,
+      videoAnalysis: msg.video_analysis,
+      sentimentScore: msg.sentiment_score || undefined,
+      timestamp: new Date(msg.created_at)
+    }));
+
     return {
-      id: conversationId,
-      title: 'Conversation',
+      id: conversation.id,
+      title: conversation.title,
       messages: this.messages,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date(conversation.created_at),
+      updatedAt: new Date(conversation.updated_at)
     };
   }
 
@@ -95,6 +145,14 @@ export class ConversationService {
 
     this.messages.push(userMessage);
 
+    await supabase.from('messages').insert({
+      conversation_id: this.currentConversationId!,
+      role: 'user',
+      content,
+      video_analysis: videoAnalysis,
+      sentiment_score: sentimentAnalysis.score
+    });
+
     const context: ConversationContext = {
       emotionalState: sentimentAnalysis.emotions,
       videoAnalysis,
@@ -114,6 +172,19 @@ export class ConversationService {
     };
 
     this.messages.push(assistantMessage);
+
+    await supabase.from('messages').insert({
+      conversation_id: this.currentConversationId!,
+      role: 'assistant',
+      content: aiResponse
+    });
+
+    await supabase
+      .from('conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', this.currentConversationId!);
+
+    await this.updateAnalytics(sentimentAnalysis.score);
 
     return assistantMessage;
   }
@@ -180,7 +251,57 @@ export class ConversationService {
   }
 
   async getConversationHistory(): Promise<ConversationSession[]> {
-    return [];
+    if (!this.currentUserId) {
+      await this.initializeAuth();
+    }
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('user_id', this.currentUserId!)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(conv => ({
+      id: conv.id,
+      title: conv.title,
+      messages: [],
+      createdAt: new Date(conv.created_at),
+      updatedAt: new Date(conv.updated_at)
+    }));
+  }
+
+  private async updateAnalytics(sentimentScore: number): Promise<void> {
+    if (!this.currentUserId) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const { data: existing } = await supabase
+      .from('user_analytics')
+      .select('*')
+      .eq('user_id', this.currentUserId)
+      .eq('date', today)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('user_analytics')
+        .update({
+          messages_sent: existing.messages_sent + 1,
+          avg_sentiment: (existing.avg_sentiment * existing.messages_sent + sentimentScore) / (existing.messages_sent + 1)
+        })
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('user_analytics')
+        .insert({
+          user_id: this.currentUserId,
+          date: today,
+          messages_sent: 1,
+          avg_sentiment: sentimentScore
+        });
+    }
   }
 
   getCurrentMessages(): Message[] {
