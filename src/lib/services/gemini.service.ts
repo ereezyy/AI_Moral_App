@@ -1,25 +1,48 @@
-let GoogleGenerativeAI: any;
-let genAI: any;
-let isInitialized = false;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-async function initializeGemini() {
-  if (isInitialized) return;
+if (!GEMINI_API_KEY) {
+  console.warn('Missing Gemini API key');
+}
 
-  try {
-    const module = await import('@google/generative-ai');
-    GoogleGenerativeAI = module.GoogleGenerativeAI;
-
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Missing Gemini API key');
-    }
-
-    genAI = new GoogleGenerativeAI(apiKey);
-    isInitialized = true;
-  } catch (error) {
-    console.error('Failed to initialize Gemini:', error);
-    throw error;
+async function callGeminiAPI(prompt: string, systemInstruction?: string): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Missing Gemini API key');
   }
+
+  const response = await fetch(
+    `${GEMINI_API_URL}/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: systemInstruction ? `${systemInstruction}\n\n${prompt}` : prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.9,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.candidates[0]?.content?.parts[0]?.text || 'No response generated';
 }
 
 export interface ConversationContext {
@@ -31,7 +54,6 @@ export interface ConversationContext {
 
 export class GeminiService {
   private static instance: GeminiService;
-  private model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
   private conversationHistory: Array<{ role: string; parts: string }> = [];
 
   private constructor() {}
@@ -47,30 +69,20 @@ export class GeminiService {
     userMessage: string,
     context?: ConversationContext
   ): Promise<string> {
-    await initializeGemini();
-
     try {
       const systemContext = this.buildSystemContext(context);
 
-      const chat = this.model.startChat({
-        history: this.conversationHistory.map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.parts }]
-        })),
-        generationConfig: {
-          temperature: 0.9,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        },
-      });
+      const historyText = this.conversationHistory
+        .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.parts}`)
+        .join('\n');
 
-      const fullPrompt = systemContext
-        ? `${systemContext}\n\nUser: ${userMessage}`
-        : userMessage;
+      const fullPrompt = [
+        historyText,
+        systemContext,
+        `User: ${userMessage}`
+      ].filter(Boolean).join('\n\n');
 
-      const result = await chat.sendMessage(fullPrompt);
-      const response = result.response.text();
+      const response = await callGeminiAPI(fullPrompt);
 
       this.conversationHistory.push({ role: 'user', parts: userMessage });
       this.conversationHistory.push({ role: 'assistant', parts: response });
@@ -91,8 +103,6 @@ export class GeminiService {
     emotions: Record<string, number>;
     overall: string;
   }> {
-    await initializeGemini();
-
     try {
       const prompt = `Analyze the sentiment and emotions in the following text. Return a JSON object with:
 - score: a number from -1 (very negative) to 1 (very positive)
@@ -103,8 +113,7 @@ Text: "${text}"
 
 Return ONLY valid JSON, no markdown or explanation.`;
 
-      const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
+      const response = await callGeminiAPI(prompt);
 
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -132,8 +141,6 @@ Return ONLY valid JSON, no markdown or explanation.`;
     recommendation: string;
     consequences: string[];
   }> {
-    await initializeGemini();
-
     try {
       const prompt = `As an AI ethics advisor, analyze this moral dilemma:
 
@@ -152,8 +159,7 @@ Provide a thorough ethical analysis in JSON format:
 
 Return ONLY valid JSON.`;
 
-      const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
+      const response = await callGeminiAPI(prompt);
 
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -179,8 +185,6 @@ Return ONLY valid JSON.`;
     patterns: string[];
     insights: string;
   }> {
-    await initializeGemini();
-
     try {
       const interactionSummary = interactions
         .slice(-10)
@@ -200,8 +204,7 @@ Return JSON with:
 
 Return ONLY valid JSON.`;
 
-      const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
+      const response = await callGeminiAPI(prompt);
 
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
