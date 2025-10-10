@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, Video, VideoOff } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Video, VideoOff, Send } from 'lucide-react';
 import { conversationService } from '../lib/services/conversation.service';
 import { mediaPipeService } from '../lib/services/mediapipe.service';
 
@@ -10,6 +10,7 @@ export function VoiceChat() {
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [messages, setMessages] = useState(conversationService.getCurrentMessages());
   const [error, setError] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -101,6 +102,7 @@ export function VoiceChat() {
 
     try {
       setError(null);
+      setTextInput('');
       const response = await conversationService.sendMessage(content, {
         useVideoAnalysis: videoEnabled,
         videoElement: videoRef.current || undefined
@@ -115,6 +117,13 @@ export function VoiceChat() {
       setError('Failed to send message');
       console.error(err);
       setIsSpeaking(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (textInput.trim()) {
+      sendTextMessage(textInput);
     }
   };
 
@@ -174,7 +183,7 @@ export function VoiceChat() {
       </div>
 
       <div className="p-6 bg-black/30 backdrop-blur-xl border-t border-white/10">
-        <div className="flex items-center gap-4 max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-4">
           {videoEnabled && (
             <div className="relative w-32 h-24 rounded-lg overflow-hidden bg-black">
               <video
@@ -186,26 +195,46 @@ export function VoiceChat() {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <form onSubmit={handleSubmit} className="flex items-center gap-3">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Type a message..."
+              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isListening || isSpeaking}
+            />
+
             <button
+              type="submit"
+              disabled={!textInput.trim() || isListening || isSpeaking}
+              className="p-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:opacity-50 transition-all"
+              title="Send message"
+            >
+              <Send className="w-5 h-5 text-white" />
+            </button>
+
+            <button
+              type="button"
               onClick={toggleListening}
-              className={`p-4 rounded-full transition-all ${
+              className={`p-3 rounded-lg transition-all ${
                 isListening
                   ? 'bg-red-600 hover:bg-red-700 animate-pulse'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-slate-700 hover:bg-slate-600'
               }`}
               title={isListening ? 'Stop listening' : 'Start voice input'}
             >
               {isListening ? (
-                <MicOff className="w-6 h-6 text-white" />
+                <MicOff className="w-5 h-5 text-white" />
               ) : (
-                <Mic className="w-6 h-6 text-white" />
+                <Mic className="w-5 h-5 text-white" />
               )}
             </button>
 
             <button
+              type="button"
               onClick={toggleVideo}
-              className={`p-4 rounded-full transition-all ${
+              className={`p-3 rounded-lg transition-all ${
                 videoEnabled
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-slate-700 hover:bg-slate-600'
@@ -213,19 +242,19 @@ export function VoiceChat() {
               title={videoEnabled ? 'Disable video' : 'Enable video analysis'}
             >
               {videoEnabled ? (
-                <Video className="w-6 h-6 text-white" />
+                <Video className="w-5 h-5 text-white" />
               ) : (
-                <VideoOff className="w-6 h-6 text-white" />
+                <VideoOff className="w-5 h-5 text-white" />
               )}
             </button>
 
             {isSpeaking && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-purple-600/30 rounded-full">
+              <div className="flex items-center gap-2 px-4 py-2 bg-purple-600/30 rounded-lg">
                 <Volume2 className="w-5 h-5 text-purple-300 animate-pulse" />
                 <span className="text-sm text-purple-200">Speaking...</span>
               </div>
             )}
-          </div>
+          </form>
         </div>
       </div>
     </div>
