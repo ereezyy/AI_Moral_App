@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Brain, Video, MessageSquare, TrendingUp, User, Settings } from 'lucide-react';
 import { VoiceChat } from './components/VoiceChat';
 import { AppLayout } from './components/layouts/AppLayout';
-import { OverviewSection, AnalysisSection, CoachingSection, InsightsSection, ProfileSection } from './components/sections';
+import { OverviewSection, AnalysisSection, InsightsSection, ProfileSection } from './components/sections';
 import { ErrorBoundaryProvider } from './lib/providers';
 import { ThemeProvider } from './components/ThemeProvider';
 import type { NavigationSection, BreadcrumbItem } from './types/navigation';

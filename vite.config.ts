@@ -19,10 +19,13 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom']
+          'react-vendor': ['react', 'react-dom'],
+          'ai-services': ['@google/generative-ai'],
+          'database': ['@supabase/supabase-js']
         }
       }
     }
