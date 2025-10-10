@@ -128,10 +128,10 @@ export function VoiceChat() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="p-6 border-b border-white/10">
-        <h1 className="text-3xl font-bold text-white mb-2">AI Life Partner</h1>
-        <p className="text-slate-300">Real-time voice & video conversation with advanced AI</p>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-6 border-b border-border">
+        <h1 className="text-3xl font-bold text-foreground mb-2">AI Life Partner</h1>
+        <p className="text-muted-foreground">Real-time voice & video conversation with advanced AI</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -143,16 +143,16 @@ export function VoiceChat() {
             <div
               className={`max-w-2xl px-6 py-4 rounded-2xl ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white/10 text-white backdrop-blur-lg'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-foreground border border-border'
               }`}
             >
-              <p className="text-sm font-semibold mb-1">
+              <p className="text-sm font-semibold mb-1 opacity-90">
                 {msg.role === 'user' ? 'You' : 'AI Partner'}
               </p>
               <p className="leading-relaxed">{msg.content}</p>
               {msg.videoAnalysis?.faceDetected && (
-                <div className="mt-3 pt-3 border-t border-white/20 text-xs">
+                <div className="mt-3 pt-3 border-t border-border text-xs">
                   <p className="opacity-70">
                     Emotion: {Object.entries(msg.videoAnalysis.facialExpression)
                       .sort(([, a], [, b]) => b - a)[0][0]} •
@@ -166,7 +166,7 @@ export function VoiceChat() {
 
         {transcript && (
           <div className="flex justify-end">
-            <div className="max-w-2xl px-6 py-4 rounded-2xl bg-blue-600/50 text-white">
+            <div className="max-w-2xl px-6 py-4 rounded-2xl bg-primary/50 text-primary-foreground border border-primary">
               <p className="text-sm opacity-70 mb-1">Listening...</p>
               <p className="leading-relaxed">{transcript}</p>
             </div>
@@ -175,14 +175,14 @@ export function VoiceChat() {
 
         {error && (
           <div className="flex justify-center">
-            <div className="px-6 py-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-200">
+            <div className="px-6 py-3 rounded-lg bg-error/20 border border-error/50 text-error">
               {error}
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-6 bg-black/30 backdrop-blur-xl border-t border-white/10">
+      <div className="p-6 bg-muted/30 backdrop-blur-xl border-t border-border">
         <div className="max-w-4xl mx-auto space-y-4">
           {videoEnabled && (
             <div className="relative w-32 h-24 rounded-lg overflow-hidden bg-black">
@@ -201,17 +201,17 @@ export function VoiceChat() {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isListening || isSpeaking}
             />
 
             <button
               type="submit"
               disabled={!textInput.trim() || isListening || isSpeaking}
-              className="p-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:opacity-50 transition-all"
+              className="p-3 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-muted disabled:opacity-50 transition-all"
               title="Send message"
             >
-              <Send className="w-5 h-5 text-white" />
+              <Send className="w-5 h-5 text-primary-foreground" />
             </button>
 
             <button
@@ -219,15 +219,15 @@ export function VoiceChat() {
               onClick={toggleListening}
               className={`p-3 rounded-lg transition-all ${
                 isListening
-                  ? 'bg-red-600 hover:bg-red-700 animate-pulse'
-                  : 'bg-slate-700 hover:bg-slate-600'
+                  ? 'bg-error hover:bg-error/90 animate-pulse'
+                  : 'bg-muted hover:bg-muted/80'
               }`}
               title={isListening ? 'Stop listening' : 'Start voice input'}
             >
               {isListening ? (
-                <MicOff className="w-5 h-5 text-white" />
+                <MicOff className="w-5 h-5 text-error-foreground" />
               ) : (
-                <Mic className="w-5 h-5 text-white" />
+                <Mic className="w-5 h-5 text-muted-foreground" />
               )}
             </button>
 
@@ -236,22 +236,22 @@ export function VoiceChat() {
               onClick={toggleVideo}
               className={`p-3 rounded-lg transition-all ${
                 videoEnabled
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-slate-700 hover:bg-slate-600'
+                  ? 'bg-success hover:bg-success/90'
+                  : 'bg-muted hover:bg-muted/80'
               }`}
               title={videoEnabled ? 'Disable video' : 'Enable video analysis'}
             >
               {videoEnabled ? (
-                <Video className="w-5 h-5 text-white" />
+                <Video className="w-5 h-5 text-success-foreground" />
               ) : (
-                <VideoOff className="w-5 h-5 text-white" />
+                <VideoOff className="w-5 h-5 text-muted-foreground" />
               )}
             </button>
 
             {isSpeaking && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-purple-600/30 rounded-lg">
-                <Volume2 className="w-5 h-5 text-purple-300 animate-pulse" />
-                <span className="text-sm text-purple-200">Speaking...</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-lg border border-primary/30">
+                <Volume2 className="w-5 h-5 text-primary animate-pulse" />
+                <span className="text-sm text-primary">Speaking...</span>
               </div>
             )}
           </form>

@@ -59,17 +59,17 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
-            <Brain className="w-6 h-6 text-indigo-600 mb-2" />
+            <Brain className="w-6 h-6 text-primary mb-2" />
             <h4 className="font-medium text-foreground">Smart Analysis</h4>
             <p className="text-xs text-muted-foreground">Understands your emotions through camera and voice</p>
           </div>
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
-            <TrendingUp className="w-6 h-6 text-blue-600 mb-2" />
+            <TrendingUp className="w-6 h-6 text-info mb-2" />
             <h4 className="font-medium text-foreground">Smart Predictions</h4>
             <p className="text-xs text-muted-foreground">Learns your patterns to predict what helps you most</p>
           </div>
           <div className="p-3 bg-background/60 rounded-md border border-border/50">
-            <Activity className="w-6 h-6 text-green-600 mb-2" />
+            <Activity className="w-6 h-6 text-success mb-2" />
             <h4 className="font-medium text-foreground">Personal Growth</h4>
             <p className="text-xs text-muted-foreground">Personalized coaching that grows with you</p>
           </div>
