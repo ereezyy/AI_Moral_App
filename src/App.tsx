@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Brain, Video, MessageSquare, TrendingUp, User, Settings } from 'lucide-react';
+import { VoiceChat } from './components/VoiceChat';
 import { AppLayout } from './components/layouts/AppLayout';
 import { OverviewSection, AnalysisSection, CoachingSection, InsightsSection, ProfileSection } from './components/sections';
 import { ErrorBoundaryProvider } from './lib/providers';
@@ -8,7 +9,7 @@ import type { NavigationSection, BreadcrumbItem } from './types/navigation';
 import type { VideoAnalysis, AudioAnalysis } from './types/analysis';
 
 function App() {
-  const [currentSection, setCurrentSection] = useState<NavigationSection>('overview');
+  const [currentSection, setCurrentSection] = useState<NavigationSection>('coaching');
   const [videoAnalysis, setVideoAnalysis] = useState<VideoAnalysis | null>(null);
   const [audioAnalysis, setAudioAnalysis] = useState<AudioAnalysis | null>(null);
 
@@ -100,12 +101,7 @@ function App() {
           />
         );
       case 'coaching':
-        return (
-          <CoachingSection 
-            videoAnalysis={videoAnalysis}
-            audioAnalysis={audioAnalysis}
-          />
-        );
+        return <VoiceChat />;
       case 'insights':
         return (
           <InsightsSection 
