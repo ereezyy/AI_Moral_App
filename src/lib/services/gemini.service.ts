@@ -1,12 +1,26 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+let GoogleGenerativeAI: any;
+let genAI: any;
+let isInitialized = false;
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+async function initializeGemini() {
+  if (isInitialized) return;
 
-if (!apiKey) {
-  throw new Error('Missing Gemini API key');
+  try {
+    const module = await import('@google/generative-ai');
+    GoogleGenerativeAI = module.GoogleGenerativeAI;
+
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Missing Gemini API key');
+    }
+
+    genAI = new GoogleGenerativeAI(apiKey);
+    isInitialized = true;
+  } catch (error) {
+    console.error('Failed to initialize Gemini:', error);
+    throw error;
+  }
 }
-
-const genAI = new GoogleGenerativeAI(apiKey);
 
 export interface ConversationContext {
   userProfile?: any;
@@ -33,6 +47,8 @@ export class GeminiService {
     userMessage: string,
     context?: ConversationContext
   ): Promise<string> {
+    await initializeGemini();
+
     try {
       const systemContext = this.buildSystemContext(context);
 
@@ -75,6 +91,8 @@ export class GeminiService {
     emotions: Record<string, number>;
     overall: string;
   }> {
+    await initializeGemini();
+
     try {
       const prompt = `Analyze the sentiment and emotions in the following text. Return a JSON object with:
 - score: a number from -1 (very negative) to 1 (very positive)
@@ -114,6 +132,8 @@ Return ONLY valid JSON, no markdown or explanation.`;
     recommendation: string;
     consequences: string[];
   }> {
+    await initializeGemini();
+
     try {
       const prompt = `As an AI ethics advisor, analyze this moral dilemma:
 
@@ -159,6 +179,8 @@ Return ONLY valid JSON.`;
     patterns: string[];
     insights: string;
   }> {
+    await initializeGemini();
+
     try {
       const interactionSummary = interactions
         .slice(-10)
