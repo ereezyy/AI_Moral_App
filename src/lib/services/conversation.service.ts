@@ -40,96 +40,28 @@ export class ConversationService {
   }
 
   private async initializeAuth(): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      this.currentUserId = user.id;
-      await this.ensureUserProfile(user.id);
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        this.currentUserId = session.user.id;
-        await this.ensureUserProfile(session.user.id);
-      } else {
-        this.currentUserId = null;
-      }
-    });
-  }
-
-  private async ensureUserProfile(userId: string): Promise<void> {
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (!profile) {
-      await supabase.from('user_profiles').insert({
-        id: userId,
-        psychological_profile: {},
-        behavioral_patterns: {},
-        total_decisions: 0,
-        consistency_score: 0
-      });
-    }
+    this.currentUserId = 'demo-user-' + Date.now();
   }
 
   async startNewConversation(title?: string): Promise<string> {
     if (!this.currentUserId) {
-      throw new Error('User not authenticated');
+      await this.initializeAuth();
     }
 
-    const { data, error } = await supabase
-      .from('conversations')
-      .insert({
-        user_id: this.currentUserId,
-        title: title || 'New Conversation'
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    this.currentConversationId = data.id;
+    this.currentConversationId = crypto.randomUUID();
     this.messages = [];
     geminiService.clearHistory();
 
-    return data.id;
+    return this.currentConversationId;
   }
 
   async loadConversation(conversationId: string): Promise<ConversationSession> {
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', conversationId)
-      .single();
-
-    if (convError) throw convError;
-
-    const { data: messages, error: msgError } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
-
-    if (msgError) throw msgError;
-
-    this.currentConversationId = conversationId;
-    this.messages = messages.map(msg => ({
-      id: msg.id,
-      role: msg.role,
-      content: msg.content,
-      videoAnalysis: msg.video_analysis,
-      sentimentScore: msg.sentiment_score || undefined,
-      timestamp: new Date(msg.created_at)
-    }));
-
     return {
-      id: conversation.id,
-      title: conversation.title,
+      id: conversationId,
+      title: 'Conversation',
       messages: this.messages,
-      createdAt: new Date(conversation.created_at),
-      updatedAt: new Date(conversation.updated_at)
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 
@@ -163,14 +95,6 @@ export class ConversationService {
 
     this.messages.push(userMessage);
 
-    await supabase.from('messages').insert({
-      conversation_id: this.currentConversationId!,
-      role: 'user',
-      content,
-      video_analysis: videoAnalysis,
-      sentiment_score: sentimentAnalysis.score
-    });
-
     const context: ConversationContext = {
       emotionalState: sentimentAnalysis.emotions,
       videoAnalysis,
@@ -190,17 +114,6 @@ export class ConversationService {
     };
 
     this.messages.push(assistantMessage);
-
-    await supabase.from('messages').insert({
-      conversation_id: this.currentConversationId!,
-      role: 'assistant',
-      content: aiResponse
-    });
-
-    await supabase
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', this.currentConversationId!);
 
     return assistantMessage;
   }
@@ -239,38 +152,14 @@ export class ConversationService {
     consequences: string[];
   }> {
     if (!this.currentUserId) {
-      throw new Error('User not authenticated');
+      await this.initializeAuth();
     }
 
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('psychological_profile, behavioral_patterns')
-      .eq('id', this.currentUserId)
-      .single();
-
     const context: ConversationContext = {
-      userProfile: profile?.psychological_profile,
       emotionalState: this.lastVideoAnalysis?.facialExpression
     };
 
     const analysis = await geminiService.analyzeMoralDilemma(dilemma, context);
-
-    await supabase.from('moral_decisions').insert({
-      user_id: this.currentUserId,
-      conversation_id: this.currentConversationId,
-      dilemma,
-      decision: analysis.recommendation,
-      ethical_score: analysis.ethicalScore,
-      principles_applied: analysis.principlesApplied,
-      emotional_state: this.lastVideoAnalysis?.facialExpression || {}
-    });
-
-    await supabase
-      .from('user_profiles')
-      .update({
-        total_decisions: (profile?.total_decisions || 0) + 1
-      })
-      .eq('id', this.currentUserId);
 
     return analysis;
   }
@@ -287,38 +176,11 @@ export class ConversationService {
 
     if (interactions.length < 3) return;
 
-    const profile = await geminiService.analyzePsychologicalProfile(interactions);
-
-    await supabase
-      .from('user_profiles')
-      .update({
-        psychological_profile: profile.traits,
-        behavioral_patterns: profile.patterns,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', this.currentUserId);
+    await geminiService.analyzePsychologicalProfile(interactions);
   }
 
   async getConversationHistory(): Promise<ConversationSession[]> {
-    if (!this.currentUserId) {
-      throw new Error('User not authenticated');
-    }
-
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('user_id', this.currentUserId)
-      .order('updated_at', { ascending: false });
-
-    if (error) throw error;
-
-    return data.map(conv => ({
-      id: conv.id,
-      title: conv.title,
-      messages: [],
-      createdAt: new Date(conv.created_at),
-      updatedAt: new Date(conv.updated_at)
-    }));
+    return [];
   }
 
   getCurrentMessages(): Message[] {
