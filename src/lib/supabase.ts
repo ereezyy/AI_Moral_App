@@ -26,6 +26,7 @@ class SupabaseClient {
     const queryBuilder = {
       selectQuery: '',
       eqFilters: [] as Array<{ column: string; value: any }>,
+      gteFilters: [] as Array<{ column: string; value: any }>,
       orderBy: null as { column: string; ascending: boolean } | null,
 
       select: function(columns = '*') {
@@ -38,6 +39,11 @@ class SupabaseClient {
         return this;
       },
 
+      gte: function(column: string, value: any) {
+        this.gteFilters.push({ column, value });
+        return this;
+      },
+
       order: function(column: string, options?: { ascending?: boolean }) {
         this.orderBy = { column, ascending: options?.ascending ?? true };
         return this;
@@ -45,7 +51,9 @@ class SupabaseClient {
 
       single: async function() {
         const filters = this.eqFilters.map(f => `${f.column}=eq.${f.value}`).join('&');
-        const url = `${supabaseUrl}/rest/v1/${table}?select=${this.selectQuery || '*'}&${filters}&limit=1`;
+        const gteFilters = this.gteFilters.map(f => `${f.column}=gte.${f.value}`).join('&');
+        const allFilters = [filters, gteFilters].filter(Boolean).join('&');
+        const url = `${supabaseUrl}/rest/v1/${table}?select=${this.selectQuery || '*'}&${allFilters}&limit=1`;
 
         const response = await fetch(url, {
           headers: {
@@ -64,6 +72,29 @@ class SupabaseClient {
           return { data: null, error: null };
         }
         return result;
+      },
+
+      execute: async function() {
+        let url = `${supabaseUrl}/rest/v1/${table}?select=${this.selectQuery || '*'}`;
+        const filters = this.eqFilters.map(f => `${f.column}=eq.${f.value}`).join('&');
+        const gteFilters = this.gteFilters.map(f => `${f.column}=gte.${f.value}`).join('&');
+        const allFilters = [filters, gteFilters].filter(Boolean).join('&');
+        if (allFilters) {
+          url += `&${allFilters}`;
+        }
+        if (this.orderBy) {
+          url += `&order=${this.orderBy.column}.${this.orderBy.ascending ? 'asc' : 'desc'}`;
+        }
+
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseAnonKey || '',
+            'Authorization': `Bearer ${supabaseAnonKey}`
+          }
+        });
+        const data = await response.json();
+        return { data, error: response.ok ? null : data };
       }
     };
 
@@ -111,8 +142,28 @@ class SupabaseClient {
               headers: this.getHeaders(),
               body: JSON.stringify(values)
             });
-            const data = await response.json();
-            return { data, error: response.ok ? null : data };
+            if (!response.ok) {
+              const error = await response.json();
+              return { data: null, error };
+            }
+            return { data: null, error: null };
+          }
+        };
+      },
+      upsert: (values: any, options?: { onConflict?: string }) => {
+        return {
+          execute: async () => {
+            const headers = { ...this.getHeaders(), 'Prefer': 'resolution=merge-duplicates' };
+            const response = await fetch(`${this.baseUrl}/rest/v1/${table}`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(values)
+            });
+            if (!response.ok) {
+              const error = await response.json();
+              return { data: null, error };
+            }
+            return { data: null, error: null };
           }
         };
       },

@@ -53,7 +53,7 @@ export class ConversationService {
       behavioral_patterns: {},
       total_decisions: 0,
       consistency_score: 0
-    }, { onConflict: 'id' });
+    }, { onConflict: 'id' }).execute();
   }
 
   async startNewConversation(title?: string): Promise<string> {
@@ -151,7 +151,7 @@ export class ConversationService {
       content,
       video_analysis: videoAnalysis,
       sentiment_score: sentimentAnalysis.score
-    });
+    }).execute();
 
     const context: ConversationContext = {
       emotionalState: sentimentAnalysis.emotions,
@@ -177,7 +177,7 @@ export class ConversationService {
       conversation_id: this.currentConversationId!,
       role: 'assistant',
       content: aiResponse
-    });
+    }).execute();
 
     await supabase
       .from('conversations')
@@ -259,11 +259,12 @@ export class ConversationService {
       .from('conversations')
       .select('*')
       .eq('user_id', this.currentUserId!)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .execute();
 
     if (error) throw error;
 
-    return data.map(conv => ({
+    return (data || []).map(conv => ({
       id: conv.id,
       title: conv.title,
       messages: [],
@@ -300,7 +301,7 @@ export class ConversationService {
           date: today,
           messages_sent: 1,
           avg_sentiment: sentimentScore
-        });
+        }).execute();
     }
   }
 

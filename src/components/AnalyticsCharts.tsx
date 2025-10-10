@@ -34,7 +34,8 @@ export function AnalyticsCharts() {
         .select('*')
         .eq('user_id', userId)
         .gte('date', thirtyDaysAgo.toISOString().split('T')[0])
-        .order('date', { ascending: true });
+        .order('date', { ascending: true })
+        .execute();
 
       if (error) throw error;
 
