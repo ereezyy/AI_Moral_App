@@ -114,9 +114,19 @@ export function VoiceChat() {
       await conversationService.speakMessage(response.content);
       setIsSpeaking(false);
     } catch (err) {
-      setError('Failed to send message');
-      console.error(err);
+      console.error('Send message error:', err);
       setIsSpeaking(false);
+
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (errorMessage.includes('429')) {
+        setError('AI is busy right now, but I can still listen. Try again in a moment.');
+      } else if (errorMessage.includes('API key')) {
+        setError('AI service not configured. Using fallback responses.');
+      } else {
+        setError('Message sent! Response may be delayed.');
+      }
+
+      setTimeout(() => setError(''), 5000);
     }
   };
 

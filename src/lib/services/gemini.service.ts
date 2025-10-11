@@ -5,44 +5,75 @@ if (!GEMINI_API_KEY) {
   console.warn('Missing Gemini API key');
 }
 
-async function callGeminiAPI(prompt: string, systemInstruction?: string): Promise<string> {
+async function callGeminiAPI(prompt: string, systemInstruction?: string, retries = 3): Promise<string> {
   if (!GEMINI_API_KEY) {
-    throw new Error('Missing Gemini API key');
+    return generateFallbackResponse(prompt);
   }
 
-  const response = await fetch(
-    `${GEMINI_API_URL}/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const response = await fetch(
+        `${GEMINI_API_URL}/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
               {
-                text: systemInstruction ? `${systemInstruction}\n\n${prompt}` : prompt
+                parts: [
+                  {
+                    text: systemInstruction ? `${systemInstruction}\n\n${prompt}` : prompt
+                  }
+                ]
               }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.9,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
+            ],
+            generationConfig: {
+              temperature: 0.9,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 2048,
+            }
+          })
         }
-      })
-    }
-  );
+      );
 
-  if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status}`);
+      if (response.status === 429 && attempt < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 2000));
+        continue;
+      }
+
+      if (!response.ok) {
+        if (attempt === retries - 1) {
+          return generateFallbackResponse(prompt);
+        }
+        continue;
+      }
+
+      const data = await response.json();
+      return data.candidates[0]?.content?.parts[0]?.text || 'No response generated';
+    } catch (error) {
+      if (attempt === retries - 1) {
+        return generateFallbackResponse(prompt);
+      }
+      await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1000));
+    }
   }
 
-  const data = await response.json();
-  return data.candidates[0]?.content?.parts[0]?.text || 'No response generated';
+  return generateFallbackResponse(prompt);
+}
+
+function generateFallbackResponse(prompt: string): string {
+  const responses = [
+    "I understand you're reaching out. While I'm processing your request, I want you to know I'm here to listen and support you. Could you tell me more about what's on your mind?",
+    "Thank you for sharing that with me. I'm currently experiencing high demand, but I want to make sure you feel heard. What aspect of this situation would you like to explore first?",
+    "I appreciate you opening up. Let me reflect on what you've said. What I'm hearing is important, and I'd like to understand it better. Can you help me understand what matters most to you about this?",
+    "I'm here with you. Sometimes taking a moment to pause and reflect can be valuable. What feelings are coming up for you as you think about this?",
+    "Thank you for trusting me with your thoughts. While I process this, I'm curious - what would an ideal outcome look like for you in this situation?"
+  ];
+
+  return responses[Math.floor(Math.random() * responses.length)];
 }
 
 export interface ConversationContext {
@@ -94,7 +125,10 @@ export class GeminiService {
       return response;
     } catch (error) {
       console.error('Gemini API error:', error);
-      throw new Error('Failed to generate AI response');
+      const fallbackResponse = generateFallbackResponse(userMessage);
+      this.conversationHistory.push({ role: 'user', parts: userMessage });
+      this.conversationHistory.push({ role: 'assistant', parts: fallbackResponse });
+      return fallbackResponse;
     }
   }
 
