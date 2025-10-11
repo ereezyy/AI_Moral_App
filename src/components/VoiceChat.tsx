@@ -116,17 +116,8 @@ export function VoiceChat() {
     } catch (err) {
       console.error('Send message error:', err);
       setIsSpeaking(false);
-
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      if (errorMessage.includes('429')) {
-        setError('AI is busy right now, but I can still listen. Try again in a moment.');
-      } else if (errorMessage.includes('API key')) {
-        setError('AI service not configured. Using fallback responses.');
-      } else {
-        setError('Message sent! Response may be delayed.');
-      }
-
-      setTimeout(() => setError(''), 5000);
+      setError('Failed to send message. Please try again.');
+      setTimeout(() => setError(''), 3000);
     }
   };
 
