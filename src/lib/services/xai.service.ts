@@ -50,12 +50,24 @@ export class XAIService {
       });
 
       if (!response.ok) {
-        console.error('XAI API error:', response.status);
-        return this.getFallbackResponse(userMessage);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('XAI API error:', response.status, errorText);
+        const fallback = this.getFallbackResponse(userMessage);
+        this.conversationHistory.push({ role: 'user', content: userMessage });
+        this.conversationHistory.push({ role: 'assistant', content: fallback });
+        return fallback;
       }
 
       const data = await response.json();
-      const aiResponse = data.choices[0]?.message?.content || this.getFallbackResponse(userMessage);
+      const aiResponse = data.choices?.[0]?.message?.content;
+
+      if (!aiResponse) {
+        console.error('No response from XAI:', data);
+        const fallback = this.getFallbackResponse(userMessage);
+        this.conversationHistory.push({ role: 'user', content: userMessage });
+        this.conversationHistory.push({ role: 'assistant', content: fallback });
+        return fallback;
+      }
 
       this.conversationHistory.push({ role: 'user', content: userMessage });
       this.conversationHistory.push({ role: 'assistant', content: aiResponse });
