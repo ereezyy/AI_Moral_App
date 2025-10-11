@@ -27,8 +27,6 @@ export class MediaPipeService {
   private static instance: MediaPipeService;
   private faceDetector: any = null;
   private initialized = false;
-  private lastAnalysisTime = 0;
-  private analysisThrottle = 100;
 
   private constructor() {}
 
@@ -72,12 +70,6 @@ export class MediaPipeService {
       console.warn('Face detection not initialized');
       return null;
     }
-
-    const now = Date.now();
-    if (now - this.lastAnalysisTime < this.analysisThrottle) {
-      return null;
-    }
-    this.lastAnalysisTime = now;
 
     try {
       let faceDetected = false;
@@ -252,10 +244,6 @@ export class MediaPipeService {
 
   isInitialized(): boolean {
     return this.initialized;
-  }
-
-  setAnalysisThrottle(ms: number): void {
-    this.analysisThrottle = Math.max(50, ms);
   }
 }
 
