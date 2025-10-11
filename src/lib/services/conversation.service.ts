@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { xaiService, ConversationContext } from './xai.service';
+import { smartChatService, ConversationContext } from './smartChat.service';
 import { speechService } from './speech.service';
 import { mediaPipeService, VideoAnalysisResult } from './mediapipe.service';
 
@@ -74,7 +74,7 @@ export class ConversationService {
 
     this.currentConversationId = data.id;
     this.messages = [];
-    xaiService.clearHistory();
+    smartChatService.clearHistory();
 
     return data.id;
   }
@@ -132,7 +132,7 @@ export class ConversationService {
       this.lastVideoAnalysis = videoAnalysis;
     }
 
-    const sentimentAnalysis = await xaiService.analyzeSentiment(content);
+    const sentimentAnalysis = await smartChatService.analyzeSentiment(content);
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -162,7 +162,7 @@ export class ConversationService {
       }))
     };
 
-    const aiResponse = await xaiService.generateResponse(content, context);
+    const aiResponse = await smartChatService.generateResponse(content, context);
 
     const assistantMessage: Message = {
       id: crypto.randomUUID(),
@@ -230,7 +230,7 @@ export class ConversationService {
       emotionalState: this.lastVideoAnalysis?.facialExpression
     };
 
-    const response = await xaiService.generateResponse(
+    const response = await smartChatService.generateResponse(
       `I'm facing a moral dilemma: ${dilemma}. Please help me analyze this from multiple ethical perspectives and consider the consequences of different choices.`,
       context
     );
@@ -255,7 +255,7 @@ export class ConversationService {
 
     if (interactions.length < 3) return;
 
-    await xaiService.analyzePsychologicalProfile(interactions);
+    await smartChatService.analyzePsychologicalProfile(interactions);
   }
 
   async getConversationHistory(): Promise<ConversationSession[]> {
